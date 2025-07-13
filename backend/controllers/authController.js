@@ -29,27 +29,12 @@ const createRefreshToken = async (user, res) => {
             expiresIn: "10d",
         }
     );
+
     await User.findByIdAndUpdate(user._id, {
         refreshToken: refreshToken,
     });
-    const cookieOptionsRefresh = {
-        expires: new Date(
-            Date.now() +
-                process.env.JWT_COOKIE_REFRESH_TOKEN_EXPIRES_IN *
-                    24 *
-                    60 *
-                    60 *
-                    1000
-        ),
-        httpOnly: true,
-        secure: false,
-        sameSite: "none",
-    };
-    if (process.env.NODE_ENV === "production")
-        cookieOptionsRefresh.sameSite = "none";
-    if (process.env.NODE_ENV === "production")
-        cookieOptionsRefresh.secure = true;
-    res.cookie("refresh", refreshToken, cookieOptionsRefresh);
+
+    return refreshToken;
 };
 
 const createSendToken = async (
@@ -59,13 +44,15 @@ const createSendToken = async (
     expiresTime = "10000s"
 ) => {
     const token = createAccessToken(user, res, expiresTime);
-    await createRefreshToken(user, res);
+    const refreshToken = await createRefreshToken(user, res);
+
     // Remove password from output
     user.password = undefined;
 
     res.status(statusCode).json({
         status: "success",
         token,
+        refreshToken, // Thêm refreshToken vào response
         data: {
             user,
         },
@@ -73,21 +60,33 @@ const createSendToken = async (
 };
 
 exports.refreshToken = catchAsync(async (req, res, next) => {
-    const cookies = req.cookies;
-    if (!cookies?.refresh)
+
+    let refreshToken;
+
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith("Bearer")
+    ) {
+        refreshToken = req.headers.authorization.split(" ")[1];
+    }
+
+    if (!refreshToken) {
         return next(
             new AppError(
                 "You are not logged in! Please log in to get access.",
                 401
             )
         );
-    const refreshToken = cookies.refresh;
-    const user = await User.find({ refreshToken: refreshToken });
+    }
+
+    const user = await User.findOne({ refreshToken: refreshToken });
     if (!user) return next(new AppError("Forbidden", 403));
+
     const decoded = await promisify(jwt.verify)(
         refreshToken,
         process.env.JWT_REFRESH_SECRET
     );
+
     const currentUser = await User.findById(decoded.id).populate("profile");
 
     if (!currentUser) {
@@ -98,6 +97,7 @@ exports.refreshToken = catchAsync(async (req, res, next) => {
             )
         );
     }
+
     const token = createAccessToken(currentUser, res);
 
     res.status(200).json({
