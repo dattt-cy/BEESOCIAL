@@ -147,10 +147,15 @@ function page() {
   }
   const getUsers = async (id: any) => {
     try {
-      const url = UrlConfig.otherUsers.getProfileByID.replace(':id', id)
+      const url =
+        typeof UrlConfig.otherUsers.getProfileByID === 'function'
+          ? UrlConfig.otherUsers.getProfileByID(id)
+          : UrlConfig.otherUsers.getProfileByID.replace(':id', id)
       const response = await axiosPrivate.get(url)
       setData(response.data.data)
-    } catch (err) {}
+    } catch (err) {
+      console.log('getUsers error:', err)
+    }
   }
   const getNumberOfFollow = async (id: any) => {
     try {
