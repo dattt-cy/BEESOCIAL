@@ -8,12 +8,12 @@
 
 ### Ưu điểm cho DevShare Lite:
 
-- **Linh hoạt Schema**: Dễ dàng thêm/sửa fields mà không cần migration phức tạp
-- **Hiệu suất cao**: Truy vấn nhanh với indexing tối ưu
-- **Scalability**: Dễ mở rộng horizontal khi người dùng tăng
-- **JSON-like Structure**: Phù hợp với Node.js và React ecosystem
-- **Rich Queries**: Hỗ trợ aggregate, population, virtual fields
-- **Social Media Ready**: Tối ưu cho data structure của mạng xã hội
+-   **Linh hoạt Schema**: Dễ dàng thêm/sửa fields mà không cần migration phức tạp
+-   **Hiệu suất cao**: Truy vấn nhanh với indexing tối ưu
+-   **Scalability**: Dễ mở rộng horizontal khi người dùng tăng
+-   **JSON-like Structure**: Phù hợp với Node.js và React ecosystem
+-   **Rich Queries**: Hỗ trợ aggregate, population, virtual fields
+-   **Social Media Ready**: Tối ưu cho data structure của mạng xã hội
 
 ---
 
@@ -80,9 +80,9 @@
 
 #### Indexes:
 
-- `email`: Unique index
-- `role`: Performance index
-- `isActived`: Query optimization
+-   `email`: Unique index
+-   `role`: Performance index
+-   `isActived`: Query optimization
 
 #### Virtual Population:
 
@@ -97,8 +97,8 @@ profile: {
 
 #### Middleware:
 
-- **Pre-save**: Hash password với bcrypt (cost: 12)
-- **Pre-find**: Auto populate profile, exclude sensitive fields
+-   **Pre-save**: Hash password với bcrypt (cost: 12)
+-   **Pre-find**: Auto populate profile, exclude sensitive fields
 
 ---
 
@@ -124,14 +124,14 @@ profile: {
 
 #### Constraints:
 
-- **firstname/lastname**: Regex validation `^[a-zA-Z0-9_\p{L}]+$`
-- **slug**: Regex validation `^[a-zA-Z0-9_]+$`, unique
-- **user**: Unique index (1:1 relationship)
+-   **firstname/lastname**: Regex validation `^[a-zA-Z0-9_\p{L}]+$`
+-   **slug**: Regex validation `^[a-zA-Z0-9_]+$`, unique
+-   **user**: Unique index (1:1 relationship)
 
 #### Business Rules:
 
-- Slug được sử dụng cho URL profile: `/profile/{slug}`
-- Avatar và background được lưu trên Cloudinary
+-   Slug được sử dụng cho URL profile: `/profile/{slug}`
+-   Avatar và background được lưu trên Cloudinary
 
 ---
 
@@ -157,9 +157,9 @@ profile: {
 
 #### Validation:
 
-- **content**: Max 8192 characters, trimmed
-- **images**: Max 4 images per post
-- **user**: Required reference
+-   **content**: Max 8192 characters, trimmed
+-   **images**: Max 4 images per post
+-   **user**: Required reference
 
 #### Auto Population:
 
@@ -176,9 +176,9 @@ user: {
 
 #### Sharing Feature:
 
-- **Original posts**: `parent = null`
-- **Shared posts**: `parent = originalPostId`
-- Auto update `numShares` counter
+-   **Original posts**: `parent = null`
+-   **Shared posts**: `parent = originalPostId`
+-   Auto update `numShares` counter
 
 ---
 
@@ -201,14 +201,14 @@ user: {
 
 #### Hierarchical Structure:
 
-- **Root comments**: `parent = null`
-- **Replies**: `parent = commentId`
-- **Nested replies**: Support unlimited depth
+-   **Root comments**: `parent = null`
+-   **Replies**: `parent = commentId`
+-   **Nested replies**: Support unlimited depth
 
 #### Auto Calculation Middleware:
 
-- **Post hooks**: Update `numComments` in Post
-- **Delete hooks**: Recalculate counts when deleted
+-   **Post hooks**: Update `numComments` in Post
+-   **Delete hooks**: Recalculate counts when deleted
 
 ---
 
@@ -227,14 +227,14 @@ user: {
 
 #### Constraints:
 
-- **Composite Unique Index**: `{user: 1, post: 1}`
-- Một user chỉ like được 1 lần cho mỗi post
+-   **Composite Unique Index**: `{user: 1, post: 1}`
+-   Một user chỉ like được 1 lần cho mỗi post
 
 #### Auto Update Logic:
 
 ```javascript
 // Tự động cập nhật numLikes trong Post
-post.numLikes = await LikePost.countDocuments({ post: postId })
+post.numLikes = await LikePost.countDocuments({ post: postId });
 ```
 
 ---
@@ -254,14 +254,14 @@ post.numLikes = await LikePost.countDocuments({ post: postId })
 
 #### Constraints:
 
-- **Composite Unique Index**: `{user: 1, comment: 1}`
-- Một user chỉ like được 1 lần cho mỗi comment
+-   **Composite Unique Index**: `{user: 1, comment: 1}`
+-   Một user chỉ like được 1 lần cho mỗi comment
 
 #### Auto Update Logic:
 
 ```javascript
 // Tự động cập nhật numLikes trong Comment
-comment.numLikes = await CommentLike.countDocuments({ comment: commentId })
+comment.numLikes = await CommentLike.countDocuments({ comment: commentId });
 ```
 
 ---
@@ -281,9 +281,9 @@ comment.numLikes = await CommentLike.countDocuments({ comment: commentId })
 
 #### Business Logic:
 
-- Cho phép user share nhiều lần cùng một bài viết
-- Tự động cập nhật `numShares` trong Post model
-- Tạo shared post với `parent` reference
+-   Cho phép user share nhiều lần cùng một bài viết
+-   Tự động cập nhật `numShares` trong Post model
+-   Tạo shared post với `parent` reference
 
 ---
 
@@ -293,36 +293,36 @@ comment.numLikes = await CommentLike.countDocuments({ comment: commentId })
 
 ```javascript
 // User Collection
-db.users.createIndex({ email: 1 }, { unique: true })
-db.users.createIndex({ role: 1 })
-db.users.createIndex({ isActived: 1 })
+db.users.createIndex({ email: 1 }, { unique: true });
+db.users.createIndex({ role: 1 });
+db.users.createIndex({ isActived: 1 });
 
 // Profile Collection
-db.profiles.createIndex({ user: 1 }, { unique: true })
-db.profiles.createIndex({ slug: 1 }, { unique: true })
+db.profiles.createIndex({ user: 1 }, { unique: true });
+db.profiles.createIndex({ slug: 1 }, { unique: true });
 
 // Post Collection
-db.posts.createIndex({ user: 1 })
-db.posts.createIndex({ createdAt: -1 })
-db.posts.createIndex({ isActived: 1 })
-db.posts.createIndex({ parent: 1 })
+db.posts.createIndex({ user: 1 });
+db.posts.createIndex({ createdAt: -1 });
+db.posts.createIndex({ isActived: 1 });
+db.posts.createIndex({ parent: 1 });
 
 // Comment Collection
-db.comments.createIndex({ post: 1 })
-db.comments.createIndex({ parent: 1 })
-db.comments.createIndex({ user: 1 })
+db.comments.createIndex({ post: 1 });
+db.comments.createIndex({ parent: 1 });
+db.comments.createIndex({ user: 1 });
 
 // LikePost Collection
-db.likeposts.createIndex({ user: 1, post: 1 }, { unique: true })
-db.likeposts.createIndex({ post: 1 })
+db.likeposts.createIndex({ user: 1, post: 1 }, { unique: true });
+db.likeposts.createIndex({ post: 1 });
 
 // CommentLike Collection
-db.commentlikes.createIndex({ user: 1, comment: 1 }, { unique: true })
-db.commentlikes.createIndex({ comment: 1 })
+db.commentlikes.createIndex({ user: 1, comment: 1 }, { unique: true });
+db.commentlikes.createIndex({ comment: 1 });
 
 // SharePost Collection
-db.shareposts.createIndex({ post: 1 })
-db.shareposts.createIndex({ sharer: 1 })
+db.shareposts.createIndex({ post: 1 });
+db.shareposts.createIndex({ sharer: 1 });
 ```
 
 ### Common Query Patterns
@@ -332,38 +332,38 @@ db.shareposts.createIndex({ sharer: 1 })
 ```javascript
 // Lấy bài viết mới nhất với thông tin user và interaction counts
 Post.find({ isActived: true })
-  .populate('user', 'email profile')
-  .populate('parent') // For shared posts
-  .sort({ createdAt: -1 })
-  .limit(20)
+    .populate("user", "email profile")
+    .populate("parent") // For shared posts
+    .sort({ createdAt: -1 })
+    .limit(20);
 ```
 
 #### 2. Post with Comments (Threaded)
 
 ```javascript
 // Lấy bài viết với comments và replies
-const post = await Post.findById(postId)
+const post = await Post.findById(postId);
 const rootComments = await Comment.find({
-  post: postId,
-  parent: null
-}).sort({ createdAt: -1 })
+    post: postId,
+    parent: null,
+}).sort({ createdAt: -1 });
 
 const replies = await Comment.find({
-  post: postId,
-  parent: { $in: rootCommentIds }
-})
+    post: postId,
+    parent: { $in: rootCommentIds },
+});
 ```
 
 #### 3. User Profile with Posts
 
 ```javascript
 // Profile page với posts của user
-const profile = await Profile.findOne({ slug: userSlug }).populate('user')
+const profile = await Profile.findOne({ slug: userSlug }).populate("user");
 
 const userPosts = await Post.find({
-  user: profile.user._id,
-  isActived: true
-}).sort({ createdAt: -1 })
+    user: profile.user._id,
+    isActived: true,
+}).sort({ createdAt: -1 });
 ```
 
 #### 4. Check Like Status
@@ -371,14 +371,14 @@ const userPosts = await Post.find({
 ```javascript
 // Kiểm tra user đã like post/comment chưa
 const isLiked = await LikePost.exists({
-  user: userId,
-  post: postId
-})
+    user: userId,
+    post: postId,
+});
 
 const commentLiked = await CommentLike.exists({
-  user: userId,
-  comment: commentId
-})
+    user: userId,
+    comment: commentId,
+});
 ```
 
 #### 5. Share Post Flow
@@ -386,19 +386,19 @@ const commentLiked = await CommentLike.exists({
 ```javascript
 // Chia sẻ bài viết
 const sharedPost = await Post.create({
-  content: shareContent,
-  user: sharerId,
-  parent: originalPostId
-})
+    content: shareContent,
+    user: sharerId,
+    parent: originalPostId,
+});
 
 // Track sharing activity
 await SharePost.create({
-  sharer: sharerId,
-  post: originalPostId
-})
+    sharer: sharerId,
+    post: originalPostId,
+});
 
 // Update share count
-await Post.setNumShares(originalPostId)
+await Post.setNumShares(originalPostId);
 ```
 
 ---
@@ -407,31 +407,31 @@ await Post.setNumShares(originalPostId)
 
 ### 1. **Denormalization for Performance**
 
-- `numLikes`, `numComments`, `numShares` được lưu trực tiếp trong Post
-- `numLikes`, `numReplies` được lưu trực tiếp trong Comment
-- Giảm expensive COUNT queries
+-   `numLikes`, `numComments`, `numShares` được lưu trực tiếp trong Post
+-   `numLikes`, `numReplies` được lưu trực tiếp trong Comment
+-   Giảm expensive COUNT queries
 
 ### 2. **Soft Delete Pattern**
 
-- `isActived: false` thay vì xóa hard
-- Có thể khôi phục data và maintain referential integrity
+-   `isActived: false` thay vì xóa hard
+-   Có thể khôi phục data và maintain referential integrity
 
 ### 3. **Virtual Population**
 
-- User ↔ Profile relationship qua virtual fields
-- Giảm số lượng queries cần thiết
+-   User ↔ Profile relationship qua virtual fields
+-   Giảm số lượng queries cần thiết
 
 ### 4. **Middleware Automation**
 
-- Auto hash password
-- Auto update counters
-- Auto populate related data
+-   Auto hash password
+-   Auto update counters
+-   Auto populate related data
 
 ### 5. **Composite Indexes**
 
-- `{user, post}` cho LikePost
-- `{user, comment}` cho CommentLike
-- Đảm bảo uniqueness và performance
+-   `{user, post}` cho LikePost
+-   `{user, comment}` cho CommentLike
+-   Đảm bảo uniqueness và performance
 
 ---
 
@@ -439,26 +439,26 @@ await Post.setNumShares(originalPostId)
 
 ### 1. **Horizontal Scaling**
 
-- MongoDB sharding trên `user` field
-- Distribute data based on user activity
+-   MongoDB sharding trên `user` field
+-   Distribute data based on user activity
 
 ### 2. **Read Replicas**
 
-- Master-Slave setup cho read-heavy operations
-- Feed queries đọc từ replicas
+-   Master-Slave setup cho read-heavy operations
+-   Feed queries đọc từ replicas
 
 ### 3. **Caching Strategy**
 
-- Redis cache cho:
-  - User sessions (JWT)
-  - Popular posts
-  - User profiles
-  - Comment trees
+-   Redis cache cho:
+    -   User sessions (JWT)
+    -   Popular posts
+    -   User profiles
+    -   Comment trees
 
 ### 4. **Archive Strategy**
 
-- Move old posts (>1 year) to archive collections
-- Keep active data small and fast
+-   Move old posts (>1 year) to archive collections
+-   Keep active data small and fast
 
 ---
 
@@ -466,108 +466,27 @@ await Post.setNumShares(originalPostId)
 
 ### 1. **Password Security**
 
-- bcrypt hashing với cost factor 12
-- Password strength validation
-- Password change tracking
+-   bcrypt hashing với cost factor 12
+-   Password strength validation
+-   Password change tracking
 
 ### 2. **Data Validation**
 
-- Mongoose schema validation
-- Custom validators cho business rules
-- Input sanitization
+-   Mongoose schema validation
+-   Custom validators cho business rules
+-   Input sanitization
 
 ### 3. **Access Control**
 
-- Role-based permissions
-- User can only edit own content
-- Admin override capabilities
+-   Role-based permissions
+-   User can only edit own content
+-   Admin override capabilities
 
 ### 4. **Audit Trail**
 
-- `createdAt` timestamps
-- `passwordChangedAt` tracking
-- Soft delete preserves history
-
----
-
-## 📊 Sample Data Structure
-
-### Complete Post Document with Population:
-
-```javascript
-{
-  "_id": "654321...",
-  "content": "Cách tối ưu MongoDB queries cho ứng dụng Node.js?",
-  "images": [
-    "https://res.cloudinary.com/ds6hdw753/image/upload/v1/posts/abc123.jpg"
-  ],
-  "user": {
-    "_id": "123456...",
-    "email": "developer@example.com",
-    "profile": {
-      "firstname": "Nguyễn",
-      "lastname": "Văn A",
-      "slug": "nguyenvana_dev",
-      "avatar": "https://res.cloudinary.com/ds6hdw753/image/upload/v1/avatars/user123.jpg"
-    }
-  },
-  "parent": null,           // Original post
-  "numLikes": 15,
-  "numComments": 8,
-  "numShares": 3,
-  "createdAt": "2024-01-15T10:30:00.000Z",
-  "isActived": true
-}
-```
-
-### Shared Post Example:
-
-```javascript
-{
-  "_id": "789012...",
-  "content": "Chia sẻ bài viết hay về MongoDB!",
-  "user": {
-    "_id": "456789...",
-    "profile": { "firstname": "Trần", "lastname": "Thị B" }
-  },
-  "parent": {               // Reference to original post
-    "_id": "654321...",
-    "content": "Cách tối ưu MongoDB queries...",
-    "user": {
-      "profile": { "firstname": "Nguyễn", "lastname": "Văn A" }
-    }
-  },
-  "numLikes": 5,
-  "numComments": 2,
-  "numShares": 0,
-  "createdAt": "2024-01-16T14:20:00.000Z"
-}
-```
-
-### Complete Comment Tree:
-
-```javascript
-{
-  "_id": "comment1...",
-  "content": "Bạn có thể sử dụng aggregate pipeline...",
-  "user": {
-    "profile": { "firstname": "Expert", "lastname": "Dev" }
-  },
-  "post": "654321...",
-  "parent": null,        // Root comment
-  "numLikes": 5,
-  "numReplies": 2,
-  "replies": [           // Virtual field
-    {
-      "_id": "reply1...",
-      "content": "Cảm ơn, rất hữu ích!",
-      "parent": "comment1...",
-      "numLikes": 1,
-      "numReplies": 0
-    }
-  ]
-}
-```
+-   `createdAt` timestamps
+-   `passwordChangedAt` tracking
+-   Soft delete preserves history
 
 ---
 
@@ -578,44 +497,46 @@ await Post.setNumShares(originalPostId)
 ```javascript
 // Trong postModel.js
 PostSchema.statics.setNumShares = async function (postId) {
-  let numShares = 0
-  if (postId) {
-    numShares = await this.countDocuments({ parent: postId })
-  }
-  await this.findByIdAndUpdate(postId, { numShares: numShares })
-}
+    let numShares = 0;
+    if (postId) {
+        numShares = await this.countDocuments({ parent: postId });
+    }
+    await this.findByIdAndUpdate(postId, { numShares: numShares });
+};
 
 // Trong commentModel.js
 CommentSchema.statics.setNumComments = async function (postId) {
-  let numComments = 0
-  if (postId) {
-    numComments = await this.countDocuments({ post: postId })
-  }
-  await Post.findByIdAndUpdate(postId, { numComments: numComments })
-}
+    let numComments = 0;
+    if (postId) {
+        numComments = await this.countDocuments({ post: postId });
+    }
+    await Post.findByIdAndUpdate(postId, { numComments: numComments });
+};
 ```
 
 ### 2. **Middleware Hooks**
 
 ```javascript
 // Auto update sau khi save
-CommentSchema.post('save', async function (doc, next) {
-  if (doc) {
-    await doc.constructor.setNumComments(doc.post)
-    if (doc.parent) {
-      await doc.constructor.setNumReplies(doc.parent)
+CommentSchema.post("save", async function (doc, next) {
+    if (doc) {
+        await doc.constructor.setNumComments(doc.post);
+        if (doc.parent) {
+            await doc.constructor.setNumReplies(doc.parent);
+        }
     }
-  }
-  next()
-})
+    next();
+});
 
 // Auto update sau khi delete
 CommentSchema.post(/^findOneAndDelete/, async function (doc, next) {
-  if (doc) {
-    await this.deletedComment.constructor.setNumComments(this.deletedComment.post)
-  }
-  next()
-})
+    if (doc) {
+        await this.deletedComment.constructor.setNumComments(
+            this.deletedComment.post
+        );
+    }
+    next();
+});
 ```
 
 ### 3. **Population Strategy**
@@ -623,23 +544,23 @@ CommentSchema.post(/^findOneAndDelete/, async function (doc, next) {
 ```javascript
 // Auto populate trong pre-find middleware
 PostSchema.pre(/^find/, function (next) {
-  this.populate({
-    path: 'user',
-    select: '_id email profile role',
-    populate: {
-      path: 'profile',
-      model: 'Profile',
-      select: 'avatar firstname lastname -user slug'
-    }
-  }).populate({
-    path: 'parent', // Populate shared post
-    populate: {
-      path: 'user',
-      populate: { path: 'profile' }
-    }
-  })
-  next()
-})
+    this.populate({
+        path: "user",
+        select: "_id email profile role",
+        populate: {
+            path: "profile",
+            model: "Profile",
+            select: "avatar firstname lastname -user slug",
+        },
+    }).populate({
+        path: "parent", // Populate shared post
+        populate: {
+            path: "user",
+            populate: { path: "profile" },
+        },
+    });
+    next();
+});
 ```
 
 ---
@@ -648,11 +569,11 @@ PostSchema.pre(/^find/, function (next) {
 
 Thiết kế database này tối ưu cho:
 
-- **Performance**: Fast queries với proper indexing và denormalization
-- **Scalability**: Dễ mở rộng khi user base tăng với sharding strategy
-- **Flexibility**: Schema linh hoạt cho feature mới như sharing posts
-- **Integrity**: Referential integrity và data consistency qua middleware
-- **User Experience**: Real-time updates và responsive interactions
-- **Social Features**: Hỗ trợ đầy đủ like, comment, share với hierarchical structure
+-   **Performance**: Fast queries với proper indexing và denormalization
+-   **Scalability**: Dễ mở rộng khi user base tăng với sharding strategy
+-   **Flexibility**: Schema linh hoạt cho feature mới như sharing posts
+-   **Integrity**: Referential integrity và data consistency qua middleware
+-   **User Experience**: Real-time updates và responsive interactions
+-   **Social Features**: Hỗ trợ đầy đủ like, comment, share với hierarchical structure
 
 Database structure hỗ trợ đầy đủ các tính năng của một diễn đàn kỹ thuật hiện đại với khả năng mở rộng trong tương lai, bao gồm cả tính năng chia sẻ bài viết và comment có cấu trúc

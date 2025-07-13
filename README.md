@@ -195,7 +195,7 @@ CLIENT_URL=http://localhost:3000
 BASE_URL=http://localhost:8000
 
 # Database Configuration
-DATABASE=mongodb://localhost:27017/bee-social
+DATABASE=mongodb+srv://victomblack2020:6vxRXjtvI2o2Qqm5@cluster0.vxdotmt.mongodb.net/bee-social?retryWrites=true&w=majority&appName=Cluster0
 
 # JWT Configuration (localStorage-based)
 JWT_SECRET=my-ultra-secure-and-ultra-long-secret
@@ -222,14 +222,9 @@ TZ=Asia/Ho_Chi_Minh
 PRODUCTION_BASE_URL=https://beegin.onrender.com
 ```
 
-#### Bước 4: Khởi động MongoDB
+#### Bước 4: Không cần khởi động MongoDB local
 
-```bash
-# Đảm bảo MongoDB đang chạy
-mongod
-# Hoặc nếu dùng MongoDB service:
-sudo systemctl start mongod
-```
+Sử dụng MongoDB Atlas, backend sẽ tự động kết nối đến database cloud.
 
 #### Bước 5: Chạy backend server
 
@@ -323,7 +318,7 @@ npm run dev
 -   **Backend**: `backend/config.env` (port 8000)
 -   **Frontend**: `frontend/.env` (port 3000)
 -   **Cloudinary**: Đã cấu hình sẵn trong cả 2 file
--   **Database**: MongoDB local tại `bee-social`
+-   **Database**: MongoDB Atlas tại `DevShare-lite` (cloud, không cần cài local)
 -   **Authentication**: JWT tokens lưu trong localStorage (không dùng cookies)
 
 ## 🎯 Features đã implement
@@ -345,29 +340,3 @@ npm run dev
 -   **TypeScript**: Type safety throughout the application
 -   **Error handling**: Proper error management và user feedback
 -   **File upload**: Cloudinary integration cho media storage
-
-#### Backend (.gitignore):
-
-```gitignore
-# Environment variables
-config.env
-node_modules/
-uploads/
-*.log
-```
-
-#### Frontend (.gitignore):
-
-```gitignore
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Next.js
-.next/
-out/
-node_modules/
-```
