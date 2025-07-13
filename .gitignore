@@ -4,6 +4,7 @@ my-beeSocial-sever/
 
 # Environment variables
 .env
+.env*
 .env.local
 .env.development.local
 .env.test.local
@@ -14,6 +15,8 @@ backend/config.env
 # Dependencies
 node_modules/
 **/node_modules/
+.pnp
+.pnp.js
 
 # Frontend build outputs (Next.js)
 frontend/.next/
@@ -21,11 +24,16 @@ frontend/out/
 frontend/build/
 .next/
 out/
+build/
 
 # Backend uploads and logs
 backend/uploads/
 backend/logs/
 uploads/
+
+# Testing
+coverage/
+coverage/
 
 # Logs
 *.log
@@ -41,13 +49,9 @@ pids/
 *.seed
 *.pid.lock
 
-# Coverage
-coverage/
-*.lcov
-.nyc_output
-
-# TypeScript cache
+# TypeScript
 *.tsbuildinfo
+next-env.d.ts
 
 # Cache directories
 .npm
@@ -72,6 +76,7 @@ ehthumbs.db
 Thumbs.db
 Desktop.ini
 $RECYCLE.BIN/
+*.pem
 
 # Temporary files
 *.tmp
@@ -92,6 +97,13 @@ dist/
 # Database files
 *.sqlite
 *.db
+
+# Next.js video plugin
+videos/*
+!videos/*.json
+!videos/*.js
+!videos/*.ts
+public/_next-video
 
 # Archive files
 *.zip

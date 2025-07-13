@@ -128,21 +128,22 @@ export default function LoginPage() {
         email: username,
         password: password
       }),
-      credentials: 'include' // Add this option
+      credentials: 'include'
     })
     const resJson = await res.json()
     if (resJson.status === 'success') {
-      // redirect to '/'
       const user = resJson.data.user as User
       setIsAuthenticated(true)
       setAccessToken(resJson.token)
       setUser(user)
    
       localStorage.setItem('persist', 'persist')
-   
       localStorage.setItem('user', JSON.stringify(user))
-    
       localStorage.setItem('accessToken', resJson.token)
+    
+      // Thêm dòng này để lưu refreshToken
+      localStorage.setItem('refreshToken', resJson.refreshToken)
+    
       localStorage.setItem('role', user.role)
       router.push('/home')
     } else {
