@@ -323,7 +323,7 @@ npm run dev
 
 ### ✅ **Core Features:**
 
--   **Home page**: Pagination với random posts (5 posts/page)
+-   **Home page**: Hiển thị các bài viết được đăng gần nhất với pagination 
 -   **Search system**: Multi-tab search (Top, Latest, User, Media)
 -   **Profile system**: Dynamic user profiles với [slug] routing
 -   **Authentication**: JWT-based với localStorage
