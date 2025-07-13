@@ -100,8 +100,8 @@ export default function LoginPage() {
   const pathname = usePathname()
   const isMobile = useResponsive('down', 'md')
   const router = useRouter()
-  const [username, setUsername] = useState<string>('')
-  const [password, setPassword] = useState<string>('')
+  const [username, setUsername] = useState<string>('victomblack12@gmail.com') // mặc định email
+  const [password, setPassword] = useState<string>('123456@@') // mặc định password
   const [isLoading, setIsLoading] = useState(true)
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const { setSnack } = useSnackbar()
@@ -136,14 +136,14 @@ export default function LoginPage() {
       setIsAuthenticated(true)
       setAccessToken(resJson.token)
       setUser(user)
-   
+
       localStorage.setItem('persist', 'persist')
       localStorage.setItem('user', JSON.stringify(user))
       localStorage.setItem('accessToken', resJson.token)
-    
+
       // Thêm dòng này để lưu refreshToken
       localStorage.setItem('refreshToken', resJson.refreshToken)
-    
+
       localStorage.setItem('role', user.role)
       router.push('/home')
     } else {

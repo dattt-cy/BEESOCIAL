@@ -218,8 +218,6 @@ PUSHER_CLUSTER=ap1
 # Timezone
 TZ=Asia/Ho_Chi_Minh
 
-# Production URL
-PRODUCTION_BASE_URL=https://beegin.onrender.com
 ```
 
 #### Bước 4: Không cần khởi động MongoDB local
