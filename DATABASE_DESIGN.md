@@ -2,7 +2,7 @@
 
 ## 📋 Tổng quan
 
-**DevShare Lite** sử dụng **MongoDB** - một NoSQL document database để lưu trữ dữ liệu. Hệ thống được thiết kế với **7 collections chính**, tối ưu cho việc lưu trữ và truy xuất dữ liệu của một diễn đàn kỹ thuật với các tính năng tương tác xã hội.
+**DevShare Lite** sử dụng **MongoDB** - một NoSQL document database để lưu trữ dữ liệu. Hệ thống được thiết kế với **7 collections chính**, tối ưu cho việc lưu trữ và truy xuất dữ liệu của một mạng xã hội với các tính năng tương tác đa dạng.
 
 ## 🎯 Lý do lựa chọn MongoDB
 
@@ -137,7 +137,7 @@ profile: {
 
 ### 3. 📄 Post Collection
 
-**Mục đích**: Lưu trữ bài viết, câu hỏi và nội dung chia sẻ.
+**Mục đích**: Lưu trữ bài viết, nội dung chia sẻ và các hoạt động trên mạng xã hội.
 
 ```javascript
 {
@@ -576,4 +576,4 @@ Thiết kế database này tối ưu cho:
 -   **User Experience**: Real-time updates và responsive interactions
 -   **Social Features**: Hỗ trợ đầy đủ like, comment, share với hierarchical structure
 
-Database structure hỗ trợ đầy đủ các tính năng của một diễn đàn kỹ thuật hiện đại với khả năng mở rộng trong tương lai, bao gồm cả tính năng chia sẻ bài viết và comment có cấu trúc
+Database structure hỗ trợ đầy đủ các tính năng của một mạng xã hội hiện đại với khả năng mở rộng trong tương lai, bao gồm cả tính năng chia sẻ bài viết và comment có cấu trúc

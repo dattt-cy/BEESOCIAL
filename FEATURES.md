@@ -2,7 +2,7 @@
 
 ## 📋 Tổng quan
 
-**DevShare Lite** là một nền tảng diễn đàn kỹ thuật với đầy đủ tính năng mạng xã hội, được xây dựng bằng **MERN Stack** (MongoDB, Express.js, React, Node.js). Hệ thống cung cấp môi trường để các lập trình viên chia sẻ kiến thức, thảo luận kỹ thuật và xây dựng cộng đồng.
+**DevShare Lite** là một nền tảng diễn đàn kỹ thuật với đầy đủ tính năng mạng xã hội, được xây dựng bằng **MERN Stack** (MongoDB, Express.js, React, Node.js).
 
 ---
 
@@ -205,55 +205,63 @@ post: {
 ### ✅ **ĐÃ TRIỂN KHAI**
 
 #### 1. 🎯 **Real-time Features**
-- **Auto counter updates** cho likes, comments, shares
-- **Optimistic UI updates** với instant feedback
-- **Real-time activity tracking** cho user interactions
+
+-   **Auto counter updates** cho likes, comments, shares
+-   **Optimistic UI updates** với instant feedback
+-   **Real-time activity tracking** cho user interactions
 
 #### 2. 🚀 **Performance Optimizations**
-- **Database indexing** cho search queries
-- **Mongoose populate optimization** tránh N+1 queries
-- **React optimization** (memo, useMemo, useCallback)
-- **Image lazy loading** và compression
+
+-   **Database indexing** cho search queries
+-   **Mongoose populate optimization** tránh N+1 queries
+-   **React optimization** (memo, useMemo, useCallback)
+-   **Image lazy loading** và compression
 
 #### 3. 🔍 **Advanced Search System**
+
 ```javascript
 // Multi-field search cho users và posts
 Profile.find({
     $or: [
         { firstname: { $regex: searchQuery, $options: "i" } },
         { lastname: { $regex: searchQuery, $options: "i" } },
-        { bio: { $regex: searchQuery, $options: "i" } }
-    ]
+        { bio: { $regex: searchQuery, $options: "i" } },
+    ],
 });
 ```
-- **Dual search**: Users + Posts riêng biệt
-- **Real-time search** với debouncing
-- **Search result optimization**
+
+-   **Dual search**: Users + Posts riêng biệt
+-   **Real-time search** với debouncing
+-   **Search result optimization**
 
 #### 4. 🎨 **Enhanced UI/UX**
-- **Rich text editor** cho posts
-- **Image carousel** với lightbox
-- **Infinite scroll** timeline
-- **Modal system** với keyboard navigation
-- **Loading skeletons** và toast notifications
+
+-   **Rich text editor** cho posts
+-   **Image carousel** với lightbox
+-   **Infinite scroll** timeline
+-   **Modal system** với keyboard navigation
+-   **Loading skeletons** và toast notifications
 
 #### 5. 🔐 **Security Enhancements**
+
 ```javascript
 // Input validation & XSS protection
 const sanitizedContent = DOMPurify.sanitize(userInput);
 const schema = Joi.object({
     email: Joi.string().email().required(),
-    password: Joi.string().min(8).required()
+    password: Joi.string().min(8).required(),
 });
 ```
-- **Password hashing** với bcrypt
-- **JWT security** với refresh tokens
-- **CORS và rate limiting** cơ bản
+
+-   **Password hashing** với bcrypt
+-   **JWT security** với refresh tokens
+-   **CORS và rate limiting** cơ bản
 
 #### 6. 📷 **File Upload System**
-- **Cloudinary integration** với auto-optimization
-- **Multiple image uploads** (max 4 ảnh/post)
-- **Drag & drop interface** với progress indicators
+
+-   **Cloudinary integration** với auto-optimization
+-   **Multiple image uploads** (max 4 ảnh/post)
+-   **Drag & drop interface** với progress indicators
 
 ---
 
@@ -445,7 +453,6 @@ const compressImage = (file) => {
 -   [ ] **System analytics** và reporting
 -   [ ] **User role management**
 -   [ ] **Content approval** workflow
-
 
 #### 1.2 Enhanced Search
 

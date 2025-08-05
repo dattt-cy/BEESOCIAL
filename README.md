@@ -1,6 +1,6 @@
 # 💻 DevShare Lite
 
-Một diễn đàn trực tuyến chuyên biệt dành cho cộng đồng CNTT, nơi người dùng có thể chia sẻ kiến thức, đặt câu hỏi kỹ thuật và tham gia thảo luận về các vấn đề công nghệ thông tin.
+Một mạng xã hội hiện đại, nơi người dùng có thể kết nối, chia sẻ nội dung, tương tác và xây dựng cộng đồng trực tuyến.
 
 ## 👨‍💻 Thông tin tác giả
 
@@ -10,48 +10,49 @@ Một diễn đàn trực tuyến chuyên biệt dành cho cộng đồng CNTT, 
 
 ## 📋 Tổng quan dự án
 
-**DevShare Lite** là một diễn đàn trực tuyến được thiết kế đặc biệt cho cộng đồng lập trình viên và những người làm việc trong lĩnh vực CNTT. Nền tảng tập trung vào việc tạo ra một môi trường chia sẻ kiến thức chuyên nghiệp với các tính năng:
+**DevShare Lite** là một mạng xã hội được thiết kế để cho phép người dùng kết nối với bạn bè, chia sẻ nội dung cá nhân và tương tác trong một cộng đồng trực tuyến. Nền tảng tập trung vào việc tạo ra một môi trường mạng xã hội thân thiện và dễ sử dụng với các tính năng:
 
 ### 🎯 Chức năng chính đã thực hiện
 
-#### 📝 Quản lý bài viết chuyên sâu
+#### 📝 Chia sẻ nội dung đa phương tiện
 
--   **Tạo bài viết**: Hỗ trợ Rich Text Editor (ReactQuill)
--   **Media upload**: Hỗ trợ hình ảnh, video minh họa (tích hợp Cloudinary)
+-   **Tạo bài viết**: Hỗ trợ Rich Text Editor cho nội dung phong phú
+-   **Media upload**: Hỗ trợ hình ảnh, video (tích hợp Cloudinary)
 -   **Chỉnh sửa**: Edit và xóa bài viết của chính mình
 
-#### 💬 Hệ thống tương tác Q&A
+#### 💬 Hệ thống tương tác xã hội
 
--   **Comment threading**: Trả lời câu hỏi với hệ thống comment phân cấp
--   **Like/Unlike**: Đánh giá chất lượng câu trả lời
--   **Share**: Chia sẻ bài viết hữu ích
--   **Reply**: Phản hồi và thảo luận chuyên sâu
+-   **Comment threading**: Bình luận phân cấp đa cấp độ
+-   **Like/Unlike**: Thả tim cho bài viết và bình luận
+-   **Share**: Chia sẻ bài viết của người khác
+-   **Reply**: Phản hồi và thảo luận
 
-#### 👥 Cộng đồng kết nối
+#### 👥 Kết nối cộng đồng
 
--   **Hệ thống đăng ký**: Tài khoản cá nhân
--   **Profile management**: Quản lý thông tin cá nhân và chuyên môn
+-   **Hệ thống tài khoản**: Đăng ký và quản lý profile cá nhân
+-   **Profile management**: Quản lý thông tin cá nhân, avatar, background
+-   **Follow system**: Theo dõi và kết nối với người dùng khác
 
-#### 🔍 Khám phá nội dung
+#### 🔍 Khám phá và kết nối
 
--   **Infinite scroll**: Feed bài viết không giới hạn
--   **Advanced search**: Tìm kiếm users và posts với tabs
--   **Responsive design**: Tối ưu cho mọi thiết bị
+-   **Newsfeed**: Feed bài viết từ bạn bè và người theo dõi
+-   **Advanced search**: Tìm kiếm người dùng và bài viết
+-   **Responsive design**: Tối ưu cho mobile và desktop
 -   **Real-time interactions**: Cập nhật tương tác theo thời gian thực
 
 ## 🚀 Công nghệ sử dụng
 
 ### Frontend (`frontend`)
 
-| Công nghệ             | Phiên bản | Lý do lựa chọn                                                |
-| --------------------- | --------- | ------------------------------------------------------------- |
-| **Next.js**           | 14+       | Framework React modern với SSR/SSG, tối ưu SEO và performance |
-| **TypeScript**        | Latest    | Type safety, giảm bug runtime, IDE support tốt                |
-| **Material-UI (MUI)** | v5        | Component library phong phú, design system nhất quán          |
-| **React Context API** | Built-in  | State management đơn giản, phù hợp với quy mô dự án           |
-| **ReactQuill**        | Latest    | Rich text editor mạnh mẽ, hỗ trợ syntax highlighting          |
-| **Axios**             | Latest    | HTTP client với interceptors, xử lý JWT tự động               |
-| **Cloudinary**        | SDK       | Cloud storage cho media, tối ưu hình ảnh tự động              |
+| Công nghệ             | Phiên bản | Lý do lựa chọn                                         |
+| --------------------- | --------- | ------------------------------------------------------ |
+| **Next.js**           | 14+       | Framework React modern với SSR/SSG, tối ưu performance |
+| **TypeScript**        | Latest    | Type safety, giảm bug runtime, IDE support tốt         |
+| **Material-UI (MUI)** | v5        | Component library phong phú, design system nhất quán   |
+| **React Context API** | Built-in  | State management đơn giản, phù hợp với quy mô dự án    |
+| **ReactQuill**        | Latest    | Rich text editor mạnh mẽ cho việc tạo nội dung         |
+| **Axios**             | Latest    | HTTP client với interceptors, xử lý JWT tự động        |
+| **Cloudinary**        | SDK       | Cloud storage cho media, tối ưu hình ảnh tự động       |
 
 ### Backend (`backend`)
 
@@ -323,18 +324,18 @@ npm run dev
 
 ### ✅ **Core Features:**
 
--   **Home page**: Hiển thị các bài viết được đăng gần nhất với pagination 
--   **Search system**: Multi-tab search (Top, Latest, User, Media)
--   **Profile system**: Dynamic user profiles với [slug] routing
+-   **Home page**: Newsfeed hiển thị bài viết từ bạn bè với pagination
+-   **Search system**: Tìm kiếm người dùng và bài viết (Top, Latest, User, Media)
+-   **Profile system**: Profile cá nhân với [slug] routing động
 -   **Authentication**: JWT-based với localStorage
--   **Post management**: Create, edit, delete posts với media upload
--   **Social interactions**: Like, comment, share posts
--   **Real-time features**: Pusher integration
+-   **Post management**: Tạo, sửa, xóa bài viết với media upload
+-   **Social interactions**: Like, comment, share bài viết
+-   **Real-time features**: Pusher integration cho cập nhật thời gian thực
 
 ### ✅ **Technical Features:**
 
--   **Environment-based URLs**: Flexible deployment configuration
--   **Responsive design**: Mobile và desktop optimization
--   **TypeScript**: Type safety throughout the application
--   **Error handling**: Proper error management và user feedback
--   **File upload**: Cloudinary integration cho media storage
+-   **Environment-based URLs**: Cấu hình deployment linh hoạt
+-   **Responsive design**: Tối ưu cho mobile và desktop
+-   **TypeScript**: Type safety trong toàn bộ ứng dụng
+-   **Error handling**: Xử lý lỗi và feedback người dùng tốt
+-   **File upload**: Tích hợp Cloudinary cho lưu trữ media
