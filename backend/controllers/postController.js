@@ -1,5 +1,6 @@
 const catchAsync = require("./../utils/catchAsync");
 const postServices = require("./../services/postServices");
+const hashtagServices = require("./../services/hashtagServices");
 const factory = require("./../controllers/handlerFactory");
 const Post = require("./../models/postModel");
 
@@ -12,6 +13,12 @@ exports.setUserId = (req, res, next) => {
 
 exports.createPost = catchAsync(async (req, res, next) => {
     const data = await postServices.createPost(req.body);
+    // const da = await hashtagServices.createHashtags(req.body.content);
+    res.status(201).json(data);
+});
+
+exports.createBusinessPost = catchAsync(async (req, res, next) => {
+    const data = await postServices.createBusinessPost(req.body);
     res.status(201).json(data);
 });
 
@@ -57,6 +64,7 @@ exports.getAllPostsByMe = catchAsync(async (req, res, next) => {
     res.status(200).json(data);
 });
 exports.getPostByUserId = catchAsync(async (req, res, next) => {
+    // const data = await postServices.getPostByUserId(req.params.id, req.user.id);
     const data = await postServices.getPostsFromProfile(
         req.params.id,
         req.query,
@@ -97,15 +105,4 @@ exports.getLikedPostsByUser = catchAsync(async (req, res, next) => {
     if (req.params.id) userId = req.params.id;
     const data = await postServices.getLikedPostsByUser(userId, req.query);
     res.status(200).json(data);
-});
-exports.getRandomPost = catchAsync(async (req, res, next) => {
-    const limit = parseInt(req.query.limit, 10) || 5;
-
-    const result = await postServices.getRandomPost(req.user.id, limit);
-
-    res.status(200).json({
-        status: "success",
-        total: result.total,
-        data: result.data,
-    });
 });

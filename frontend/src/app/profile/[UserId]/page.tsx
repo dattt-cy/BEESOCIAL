@@ -147,15 +147,10 @@ function page() {
   }
   const getUsers = async (id: any) => {
     try {
-      const url =
-        typeof UrlConfig.otherUsers.getProfileByID === 'function'
-          ? UrlConfig.otherUsers.getProfileByID(id)
-          : UrlConfig.otherUsers.getProfileByID.replace(':id', id)
+      const url = UrlConfig.otherUsers.getProfileByID.replace(':id', id)
       const response = await axiosPrivate.get(url)
       setData(response.data.data)
-    } catch (err) {
-      console.log('getUsers error:', err)
-    }
+    } catch (err) {}
   }
   const getNumberOfFollow = async (id: any) => {
     try {
@@ -165,33 +160,12 @@ function page() {
     } catch (err) {}
   }
 
-  const fetchPosts = async (currentPage = 1) => {
-    const response = await axiosPrivate.get(`${UrlConfig.posts.getPostByUserId(userId)}?limit=10&page=${currentPage}`)
-    // response.data = { status: 'success', total: number, data: Post[] }
+  const fetchPosts = async (page = 1) => {
+    const response = await axiosPrivate.get(`${UrlConfig.posts.getPostByUserId(userId)}?limit=10&page=${page}`)
+    // destructure cho rõ ràng
     const { total, data: posts } = response.data
     return { total, posts }
   }
-
-  useEffect(() => {
-    if (!userId) return
-
-    const loadInitialPosts = async () => {
-      try {
-        const result = await fetchPosts(1)
-        postsDispatch({
-          type: 'SET_PROFILE_POSTS',
-          payload: {
-            posts: result.posts,
-            totalPosts: result.total
-          }
-        })
-      } catch (err) {
-        console.error('Load profile posts failed', err)
-      }
-    }
-
-    loadInitialPosts()
-  }, [userId])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -206,14 +180,25 @@ function page() {
   }, [])
 
   useEffect(() => {
-    postsDispatch({
-      type: 'SET_PROFILE_POSTS',
-      payload: {
-        posts: [],
-        totalPosts: undefined
+    if (!userId) return
+
+    const loadInitialPosts = async () => {
+      try {
+        const { total, posts } = await fetchPosts(1)
+        postsDispatch({
+          type: 'SET_PROFILE_POSTS',
+          payload: {
+            posts, // đây là mảng Post[]
+            totalPosts: total
+          }
+        })
+      } catch (err) {
+        console.error('Load profile posts failed', err)
       }
-    })
-  }, [])
+    }
+
+    loadInitialPosts()
+  }, [userId])
 
   return (
     <StyledProfile id='postsProfile'>

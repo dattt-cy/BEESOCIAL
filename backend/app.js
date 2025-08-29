@@ -14,14 +14,27 @@ const cookieSession = require("cookie-session");
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
 const userRouter = require("./routes/userRoutes");
+const followRouter = require("./routes/followRoutes");
 const postRouter = require("./routes/postRoutes");
+const commentRouter = require("./routes/commentRoutes");
+const categoryRouter = require("./routes/categoryRoutes");
+const trendingRouter = require("./routes/trendingRoutes");
 const searchRouter = require("./routes/searchRoutes");
+const reportRouter = require("./routes/reportRouters");
+const advertisementRouter = require("./routes/advertisementPlanRoutes");
+const transactionRouter = require("./routes/transactionRoutes");
+const priceRouter = require("./routes/unitPriceRoutes");
+const feedRouter = require("./routes/feedRoutes");
+const notiRouter = require("./routes/notificationRoutes");
+const issueRouter = require("./routes/issueRoutes");
 
 const cors = require("cors");
 
 const app = express();
 const upload = multer();
 
+app.enable("trust proxy");
+app.set("trust proxy", ["loopback", "linklocal", "uniquelocal"]);
 
 app.use(
     cors({
@@ -34,25 +47,26 @@ app.use(
         credentials: true, // Allow credentials (cookies) to be sent
     })
 );
-
-app.set("view engine", "pug");
-app.set("views", path.join(__dirname, "views"));
-
+app.use(
+    cookieSession({
+        secret: process.env.JWT_SECRET,
+        secure: process.env.NODE_ENV === "development" ? false : true,
+        httpOnly: process.env.NODE_ENV === "development" ? false : true,
+        sameSite: process.env.NODE_ENV === "development" ? false : "none",
+    })
+);
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
-
 
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(helmet());
 
-
 if (process.env.NODE_ENV === "development") {
     app.use(morgan("dev"));
 }
 
-// Limit requests from same API
 const limiter = rateLimit({
     max: 100000,
     windowMs: 60 * 60 * 1000,
@@ -97,10 +111,19 @@ app.use((req, res, next) => {
 
 // 3) ROUTES
 app.use("/api/v1/users", userRouter);
-
+app.use("/api/v1/follows", followRouter);
 app.use("/api/v1/posts", postRouter);
-
+app.use("/api/v1/comments", commentRouter);
+app.use("/api/v1/categories", categoryRouter);
+app.use("/api/v1/trending/", trendingRouter);
 app.use("/api/v1/search", searchRouter);
+app.use("/api/v1/reports", reportRouter);
+app.use("/api/v1/advertisements", advertisementRouter);
+app.use("/api/v1/transactions", transactionRouter);
+app.use("/api/v1/prices", priceRouter);
+app.use("/api/v1/feed", feedRouter);
+app.use("/api/v1/notifications", notiRouter);
+app.use("/api/v1/issues", issueRouter);
 
 app.all("*", (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

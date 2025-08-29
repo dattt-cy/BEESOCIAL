@@ -13,6 +13,7 @@ import { Poppins } from 'next/font/google'
 import useResponsive from '@/hooks/useResponsive'
 import logoMobile from '@/assets/logoMobile.png'
 import Image from 'next/image'
+import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined'
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
@@ -20,6 +21,7 @@ import { useRouter } from 'next/navigation'
 import Loader from '@/components/common/Loader/Loader'
 import ProfilePopover from './ProfilePopover/index'
 import SearchTextbox from './SearchTextbox/SearchTextbox'
+import NotificationPopover from '@/components/Notification/NotificationPopover'
 
 // ----------------------------------------------------------------------
 
@@ -125,6 +127,9 @@ const Layout = ({ children, menuItems }: LayoutProps) => {
   const { user } = useAuth()
 
   const logOut = async () => {
+    // deleteCookie("access_token", { path: "/" , domain: "localhost"});
+    // deleteCookie("userId", { path: "/" , domain: "localhost"})
+    // await signOut({ redirect: false });
     window.location.href = '/login'
   }
 
@@ -133,6 +138,11 @@ const Layout = ({ children, menuItems }: LayoutProps) => {
       setIsLoading(false)
     }, 1000)
   }, [])
+  // React.useEffect(() => {
+  //   if (pathname.startsWith('/admin') && !user?.role?.includes('admin')) {
+  //     router.push('/login')
+  //   }
+  // }, [])
 
   const pathSegments = pathname.split('/')
   const topic =
@@ -149,6 +159,7 @@ const Layout = ({ children, menuItems }: LayoutProps) => {
           <HeaderBar>
             <SearchTextbox />
             <Stack direction={'row'} spacing={2}>
+              <NotificationPopover></NotificationPopover>
               <ProfilePopover></ProfilePopover>
             </Stack>
           </HeaderBar>
@@ -167,6 +178,7 @@ const Layout = ({ children, menuItems }: LayoutProps) => {
             </Typography>
             <Image src={logoMobile} alt='logo' width={50} height={50} />
             <Stack direction={'row'} spacing={2} sx={{ justifyContent: 'center', alignItems: 'space-between' }}>
+              <NotificationsOutlinedIcon sx={{ fontSize: '40px' }} color='primary' />
               <AccountCircleOutlinedIcon sx={{ fontSize: '40px' }} color='primary' />
             </Stack>
           </Box>

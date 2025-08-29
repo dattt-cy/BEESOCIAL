@@ -22,7 +22,7 @@ import { LockPerson, PersonSearch, AddAPhoto, Check, Favorite } from '@mui/icons
 import StepConnector, { stepConnectorClasses } from '@mui/material/StepConnector'
 import { StepIconProps } from '@mui/material/StepIcon'
 import axios from 'axios'
-import UrlConfig from '@/theme/shadows'
+import UrlConfig from '@/config/urlConfig'
 import RegistrationComplete from './RegistrationSuccess'
 import { GiTreeBeehive } from 'react-icons/gi'
 import { GiBeehive } from 'react-icons/gi'
@@ -117,12 +117,17 @@ const StyledContent = styled('div')(({ theme }) => ({
 //----------------------------------------------------------------
 
 export default function Register() {
+  const [isPersonal, setIsPersonal] = useState<boolean>(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const mdUp = useResponsive('up', 'md')
   const router = useRouter()
 
   function _handleNext() {
-    router.push('/register/personal')
+    if (isPersonal) {
+      router.push('/register/personal')
+    } else {
+      router.push('/register/business')
+    }
   }
 
   return (
@@ -135,32 +140,50 @@ export default function Register() {
               <ArrowBack></ArrowBack>
             </IconButton>
           </Link>
+          <Link href='/login'>
+            <IconButton sx={{ position: 'absolute', left: '35px', top: '25px' }}>
+              <ArrowBack></ArrowBack>
+            </IconButton>
+          </Link>
           <StyledContent>
             <Box>
               <Image src={logoMobile} alt='logo' width={38} style={{ margin: '0' }} />
+              {/* <LogoDev fontSize='large' sx={{ color: (theme) => theme.palette.primary.main }}></LogoDev> */}
               <Typography variant='h4' gutterBottom className='mt-6 mb-3 text-2xl'>
-                Create your account
+                Choose your account type
               </Typography>
               <Typography variant='subtitle2' sx={{ fontSize: '13px' }}>
-                Join our community and start interacting with your fellow bees
+                Pick an account type based on your need. We offer a wealth experience regardless of the option you
+                choose
               </Typography>
             </Box>
 
             <Box sx={{ marginY: '35px' }}>
               <Button
-                variant='contained'
+                variant={isPersonal ? 'contained' : 'outlined'}
+                disabled={isPersonal}
+                onClick={() => setIsPersonal(!isPersonal)}
                 sx={{
                   width: '100%',
                   margin: '10px 0',
-                  borderRadius: '12px'
+                  borderRadius: '12px',
+                  '&:disabled': {
+                    // border: '2px solid rgb(155 99 191 / 63%)', background: '#e7afe01f',
+                    '& .MuiTypography-h5': {
+                      color: (theme) => theme.palette.common.white
+                    },
+                    '& .MuiTypography-subtitle2': {
+                      color: (theme) => theme.palette.grey[100]
+                    }
+                  }
                 }}
               >
                 <Stack direction={'row'} alignItems='center' justifyContent='start' sx={{ width: '100%' }}>
                   <Box
                     sx={{
                       fontSize: '28px',
-                      background: (theme) => theme.palette.common.white,
-                      color: (theme) => theme.palette.secondary.main,
+                      background: (theme) => (isPersonal ? theme.palette.common.white : theme.palette.secondary.main),
+                      color: (theme) => (isPersonal ? theme.palette.secondary.main : theme.palette.common.white),
                       padding: '10px 10px',
                       margin: '10px 5px',
                       borderRadius: '12px'
@@ -170,10 +193,52 @@ export default function Register() {
                   </Box>
                   <Box sx={{ marginLeft: '15px' }}>
                     <Typography variant='h5' sx={{ textAlign: 'left', lineHeight: 1.25, marginBottom: '5px' }}>
-                      Personal Account
+                      Personal
                     </Typography>
                     <Typography variant='subtitle2' sx={{ textTransform: 'initial' }}>
                       Start interacting with your fellow bees
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Button>
+              <Button
+                variant={!isPersonal ? 'contained' : 'outlined'}
+                disabled={!isPersonal}
+                onClick={() => setIsPersonal(!isPersonal)}
+                sx={{
+                  width: '100%',
+                  margin: '10px 0',
+                  borderRadius: '12px',
+                  '&:disabled': {
+                    // border: '2px solid rgb(155 99 191 / 63%)', background: '#e7afe01f',
+                    '& .MuiTypography-h5': {
+                      color: (theme) => theme.palette.common.white
+                    },
+                    '& .MuiTypography-subtitle2': {
+                      color: (theme) => theme.palette.grey[100]
+                    }
+                  }
+                }}
+              >
+                <Stack direction={'row'} alignItems='center' justifyContent='start' sx={{ width: '100%' }}>
+                  <Box
+                    sx={{
+                      fontSize: '28px',
+                      background: (theme) => (!isPersonal ? theme.palette.common.white : theme.palette.secondary.main),
+                      color: (theme) => (!isPersonal ? theme.palette.secondary.main : theme.palette.common.white),
+                      padding: '10px 10px',
+                      margin: '10px 5px',
+                      borderRadius: '12px'
+                    }}
+                  >
+                    <GiBeehive />
+                  </Box>
+                  <Box sx={{ marginLeft: '15px' }}>
+                    <Typography variant='h5' sx={{ textAlign: 'left', lineHeight: 1.25, marginBottom: '5px' }}>
+                      Business
+                    </Typography>
+                    <Typography variant='subtitle2' sx={{ textTransform: 'initial' }}>
+                      Further promote your business
                     </Typography>
                   </Box>
                 </Stack>
@@ -182,7 +247,7 @@ export default function Register() {
 
             <Stack direction={'row'} justifyContent={'start'} className='w-full'>
               <Button variant='contained' sx={{ padding: '8px 25px' }} onClick={_handleNext}>
-                Create Account
+                Next Step
               </Button>
             </Stack>
           </StyledContent>

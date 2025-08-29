@@ -1,4 +1,5 @@
 const AppError = require("./../utils/appError");
+const APIFeatures = require("./../utils/apiFeatures");
 
 exports.deleteOne = (Model, id) => {
     return new Promise(async (resolve, reject) => {
@@ -6,9 +7,7 @@ exports.deleteOne = (Model, id) => {
             const doc = await Model.findByIdAndDelete(id);
 
             if (!doc) {
-                return reject(
-                    new AppError("No document found with that ID", 404)
-                );
+                reject(new AppError("No document found with that ID", 404));
             }
             resolve(doc);
         } catch (error) {
@@ -26,9 +25,7 @@ exports.updateOne = (Model, id, data) => {
             });
 
             if (!doc) {
-                return reject(
-                    new AppError("No document found with that ID", 404)
-                );
+                reject(new AppError("No document found with that ID", 404));
             }
             resolve(doc);
         } catch (error) {
@@ -56,9 +53,7 @@ exports.getOne = (Model, id, popOptions) => {
             const doc = await query;
 
             if (!doc) {
-                return reject(
-                    new AppError("No document found with that ID", 404)
-                );
+                reject(new AppError("No document found with that ID", 404));
             }
             resolve(doc);
         } catch (error) {
@@ -67,13 +62,19 @@ exports.getOne = (Model, id, popOptions) => {
     });
 };
 
-exports.getAll = (Model, filter = {}, popOptions) => {
+exports.getAll = (Model, query, popOptions) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let query = Model.find(filter);
-            if (popOptions) query = query.populate(popOptions);
-            const docs = await query;
-            resolve(docs);
+            const features = new APIFeatures(Model.find(), query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
+            // const doc = await features.query.explain();
+            if (popOptions)
+                features.query = features.query.populate(popOptions);
+            const doc = await features.query;
+            resolve(doc);
         } catch (error) {
             reject(error);
         }

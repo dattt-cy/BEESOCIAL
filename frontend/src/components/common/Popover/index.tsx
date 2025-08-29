@@ -1,4 +1,3 @@
-
 'use client'
 
 import {
@@ -45,7 +44,13 @@ const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
   minWidth: '220px'
 }))
 
-const Popover = ({ icon, items }: { icon: ReactNode, items: { icon: ReactNode, content: string, onClickFunc?: any, color?: string }[] }) => {
+const Popover = ({
+  icon,
+  items
+}: {
+  icon: ReactNode
+  items: { icon: ReactNode; content: string; onClickFunc?: any; color?: string }[]
+}) => {
   const containerRef = useRef(null)
   const [anchorEl, setAnchorEl] = useState(null)
 
@@ -61,38 +66,38 @@ const Popover = ({ icon, items }: { icon: ReactNode, items: { icon: ReactNode, c
 
   return (
     <div>
-      <IconButton
-        onClick={handleClick}
-      >
-        {icon}
-      </IconButton>
+      <IconButton onClick={handleClick}>{icon}</IconButton>
       <Menu
         open={open}
         anchorEl={anchorEl}
         onClose={handleClose}
         sx={{
           '& .MuiMenu-paper': {
-
             '@media (-webkit-device-pixel-ratio: 1.25)': {
               // left: '1500px !important'
             }
           }
         }}
       >
-
         <Stack sx={{ p: '0px' }}>
-          {items.map(item =>
+          {items.map((item) => (
             <Box sx={{ padding: '0px 8px' }}>
-              <StyledMenuItem onClick={() => { item.onClickFunc(); handleClose(); }}>
+              <StyledMenuItem
+                onClick={() => {
+                  item.onClickFunc()
+                  handleClose()
+                }}
+              >
                 <ListItemIcon sx={{ alignItems: 'center', color: item.color, minWidth: '32px!important' }}>
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText sx={{ '& span': { color: `${item.color} !important` } }}>{item.content}</ListItemText>
-              </StyledMenuItem></Box>
-          )}
+              </StyledMenuItem>
+            </Box>
+          ))}
         </Stack>
       </Menu>
-    </div >
+    </div>
   )
 }
 

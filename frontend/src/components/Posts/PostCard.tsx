@@ -12,7 +12,6 @@ import {
   TextField,
   OutlinedInput
 } from '@mui/material'
-import parse from 'html-react-parser'
 import { MoreVert } from '@mui/icons-material'
 import { styled } from '@mui/material/styles'
 import React, { useEffect, useRef, useState } from 'react'
@@ -27,7 +26,7 @@ import { Post } from '@/types/post'
 import { Comment } from '@/types/comment'
 import { timeSince } from '@/utils/changeDate'
 import PostDetail from './PostDetail'
-
+import HashtagWrapper from '@/components/common/HashtagWrapper'
 import { useRouter } from 'next/navigation'
 import { usePosts } from '@/context/PostContext'
 import CreatePost from './CreatePost'
@@ -50,6 +49,7 @@ import Image from 'next/image'
 import Snackbar from '@/components/common/Snackbar'
 import HeartIcon from '@/components/common/HeartIcon'
 import VerifiedRoundedIcon from '@mui/icons-material/VerifiedRounded'
+import BusinessAvatar from '../common/Avatar/BusinessAvatar'
 import useTranslation from 'next-translate/useTranslation'
 
 const ImageContainerStyled = styled('div')<{ number: number }>((props) => ({
@@ -102,16 +102,6 @@ interface PostCardProps {
   isRepost?: boolean
   postParent?: Post
 }
-function decodeEntities(encodedStr: string) {
-  if (!encodedStr) return ''
-  try {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(encodedStr, 'text/html')
-    return doc.documentElement.textContent || ''
-  } catch (error) {
-    return encodedStr
-  }
-}
 
 const PostCard = ({ post, isRepost, postParent }: PostCardProps) => {
   const { t } = useTranslation('common')
@@ -128,20 +118,6 @@ const PostCard = ({ post, isRepost, postParent }: PostCardProps) => {
   const [openUserLikeList, setOpenUserLikeList] = React.useState(false)
   const [openSharePostList, setOpenSharePostList] = React.useState(false)
   const queryClient = useQueryClient()
-
-  // Sửa lại phần xử lý HTML content
-  let html = (post.content ?? '') as string
-
-  // Xử lý an toàn hơn
-  if (html) {
-    html = html.replace(/<span class="ql-cursor"[\s\S]*?<\/span>/gi, '')
-    html = html.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
-
-    // Nếu vẫn có entities, decode thêm lần nữa
-    if (html.includes('&lt;') || html.includes('&gt;') || html.includes('&amp;')) {
-      html = decodeEntities(html)
-    }
-  }
 
   const handleLike = async () => {
     try {
@@ -177,10 +153,10 @@ const PostCard = ({ post, isRepost, postParent }: PostCardProps) => {
     videoRef.current?.pause()
     const commentResponse = await axiosPrivate.get(`${UrlConfig.posts.getComments(post._id)}?limit=10&page=1`)
     const comments = commentResponse.data.data as Comment[]
-
+    const isFollowing = await axiosPrivate.get(UrlConfig.me.isFollowingOtherUser(post.user._id))
     postsDispatch({
       type: 'SELECT_POST',
-      payload: { ...post, comments, totalComments: commentResponse.data.total, isFollowing: true }
+      payload: { ...post, comments, totalComments: commentResponse.data.total, isFollowing: isFollowing.data.data }
     })
     setOpen(true)
   }
@@ -209,8 +185,12 @@ const PostCard = ({ post, isRepost, postParent }: PostCardProps) => {
   }
 
   async function handleReportPost() {
-    setOpenReportModal(false)
-    setSnack({ open: true, message: 'Report feature is temporarily disabled', type: 'info' })
+    const result = await axiosPrivate.post(UrlConfig.posts.reportPost, { post: post._id, reason: reason })
+
+    if (result) {
+      setOpenReportModal(false)
+      setSnack({ open: true, message: 'Reported post successfully', type: 'success' })
+    }
   }
 
   async function handleDeletePost() {
@@ -262,7 +242,6 @@ const PostCard = ({ post, isRepost, postParent }: PostCardProps) => {
       // Handle error
     }
   }
-  console.log('RAW CONTENT:', post.content)
 
   return (
     <>
@@ -321,7 +300,6 @@ const PostCard = ({ post, isRepost, postParent }: PostCardProps) => {
         sx={{
           width: '100%',
           justifyContent: 'center',
-          margin: 0, // Thêm margin: 0
           ...(isRepost && {
             border: '1px solid #dbd5d5',
             borderRadius: '12px',
@@ -348,6 +326,7 @@ const PostCard = ({ post, isRepost, postParent }: PostCardProps) => {
             src={post.user?.profile?.avatar}
             onClick={redirectToProfile}
           ></Avatar>
+          {/* <BusinessAvatar avatar={post.user?.profile?.avatar} type={post.type} redirectToProfile={redirectToProfile} /> */}
         </Grid>
         <Grid
           item
@@ -370,7 +349,18 @@ const PostCard = ({ post, isRepost, postParent }: PostCardProps) => {
               <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: 'bold', fontSize: '16px' }}>
                 {post.user?.profile?.firstname + ' ' + post.user?.profile?.lastname}
               </Typography>
-
+              {post.user.role == 'business' && (
+                <VerifiedRoundedIcon
+                  sx={{
+                    fontSize: '22px',
+                    marginLeft: '10px'
+                    // position: 'absolute',
+                    // bottom: '-2px',
+                    // right: '-6px'
+                  }}
+                  color='secondary'
+                />
+              )}
               <Typography
                 sx={{
                   color: 'rgba(0, 0, 0, 0.50)',
@@ -403,6 +393,12 @@ const PostCard = ({ post, isRepost, postParent }: PostCardProps) => {
               >
                 {timeSince(new Date(post.createdAt))}
               </Typography>
+              {post.type === 'advertisement' && (
+                <Chip label={t('Sponsored')} variant='outlined' color='secondary' sx={{ marginLeft: '15px' }} />
+              )}
+              {post.type === 'suggested' && (
+                <Chip label={t('Suggested')} variant='outlined' color='secondary' sx={{ marginLeft: '15px' }} />
+              )}
             </Stack>
             <Popover
               icon={<MoreVert />}
@@ -421,81 +417,47 @@ const PostCard = ({ post, isRepost, postParent }: PostCardProps) => {
               margin: isMobile ? '5px 0' : '10px 0',
               fontSize: isMobile ? '13px' : '18px',
               overflow: 'hidden',
-              maxHeight: '80px',
-              whiteSpace: 'pre-line',
+              // minHeight: '50px',
+              maxHeight: '80px', // Set the maximum height for the text container
+              whiteSpace: 'pre-line', // Preserve line breaks within the text
               textOverflow: 'ellipsis',
-              paddingRight: '20px',
-              lineHeight: 1.24, // Thêm line-height cố định
-              wordBreak: 'break-word', // Thêm word-break
-              display: '-webkit-box',
-              WebkitLineClamp: 3, // Giới hạn 3 dòng
-              WebkitBoxOrient: 'vertical'
-              // Xóa minHeight vì có thể gây conflict
+              paddingRight: '20px'
             }}
           >
-            {html ? parse(html) : ''}
+            {post.content && <HashtagWrapper text={post.content} length={200} />}
           </Box>
           <ImageContainerStyled number={post.images ? post.images.length : 0}>
             {post.images?.map((src, index) => {
-              if (!src) return null // Kiểm tra src tồn tại
-
-              try {
-                const urlParts = src.split('/')
-                const fileType = urlParts[4] || ''
-
-                if (fileType === 'video') {
-                  return (
-                    <Video
-                      className={`video-${index + 1}`}
-                      ref={videoRef}
-                      key={index}
-                      src={src}
-                      autoPlay={false}
-                      accentColor='#E078D8'
-                    />
-                  )
-                } else if (fileType === 'image') {
-                  return (
-                    <img
-                      onClick={openPostDetail}
-                      className={`image-${index + 1}`}
-                      src={src}
-                      key={index}
-                      alt='image'
-                      loading='lazy'
-                    />
-                  )
-                } else {
-                  // Fallback cho trường hợp không xác định được type
-                  return (
-                    <img
-                      onClick={openPostDetail}
-                      className={`image-${index + 1}`}
-                      src={src}
-                      key={index}
-                      alt='image'
-                      loading='lazy'
-                    />
-                  )
-                }
-              } catch (error) {
-                console.error('Error processing image:', error)
+              if (src && src.split('/')[4] === 'video') {
+                return (
+                  <Video
+                    className={`video-${index + 1}`}
+                    ref={videoRef}
+                    key={index}
+                    src={src}
+                    autoPlay={false}
+                    accentColor='#E078D8'
+                  />
+                )
+              } else if (src.split('/')[4] === 'image') {
+                return (
+                  <img
+                    onClick={openPostDetail}
+                    className={`image-${index + 1}`}
+                    src={src}
+                    key={index}
+                    alt='image'
+                    loading='lazy'
+                  />
+                )
+              } else {
+                // Handle the case where src is undefined or null
                 return null
               }
             })}
           </ImageContainerStyled>
-
-          {/* Hiển thị parent post thống nhất */}
-          {(post.parent || postParent) && (
-            <>
-              {post?.images?.length !== 0 && (post.parent || postParent) && (
-                <ReplyPostCard post={(post.parent || postParent) as Post} />
-              )}
-              {post?.images?.length === 0 && (post.parent || postParent) && (
-                <PostCard post={(post.parent || postParent) as Post} isRepost={true} />
-              )}
-            </>
-          )}
+          {post?.images?.length !== 0 && postParent && <ReplyPostCard post={postParent as Post} />}
+          {post?.images?.length === 0 && postParent && <PostCard post={postParent as Post} isRepost={true} />}
           {!isRepost && (
             <Stack
               direction={'row'}

@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema(
         phonenumber: String,
         role: {
             type: String,
-            enum: ["user", "admin"],
+            enum: ["user", "business", "admin"],
             default: "user",
         },
         isActived: {
@@ -58,7 +58,11 @@ const userSchema = new mongoose.Schema(
         verifyToken: String,
         verify: {
             type: Boolean,
-            default: true,
+            default: false,
+        },
+        approved: {
+            type: Boolean,
+            default: false,
         },
         createdAt: {
             type: Date,

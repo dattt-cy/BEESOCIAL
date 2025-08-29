@@ -34,7 +34,6 @@ import Image from 'next/image'
 // assets
 import LoginBanner from '@/assets/login_banner.jpg'
 import { useAuth } from '@/context/AuthContext'
-// import the correct urlConfig that has a 'user' property
 import urlConfig from '@/config/urlConfig'
 import Snackbar from '@/components/common/Snackbar'
 import useSnackbar from '@/context/snackbarContext'
@@ -96,12 +95,12 @@ const StyledContent = styled('div')(({ theme }) => ({
 //----------------------------------------------------------------
 
 export default function LoginPage() {
-  const { setIsAuthenticated, setAccessToken, setUser, user } = useAuth()
+  const { setIsAuthenticated, setAccessToken, setUser } = useAuth()
   const pathname = usePathname()
   const isMobile = useResponsive('down', 'md')
   const router = useRouter()
-  const [username, setUsername] = useState<string>('victomblack12@gmail.com') // mặc định email
-  const [password, setPassword] = useState<string>('123456@@') // mặc định password
+  const [username, setUsername] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const { setSnack } = useSnackbar()
@@ -128,31 +127,32 @@ export default function LoginPage() {
         email: username,
         password: password
       }),
-      credentials: 'include'
+      credentials: 'include' // Add this option
     })
     const resJson = await res.json()
     if (resJson.status === 'success') {
+      // redirect to '/'
       const user = resJson.data.user as User
       setIsAuthenticated(true)
       setAccessToken(resJson.token)
+
       setUser(user)
-
+      setUser(user)
+      //set local storage
       localStorage.setItem('persist', 'persist')
-      localStorage.setItem('user', JSON.stringify(user))
-      localStorage.setItem('accessToken', resJson.token)
-
-      // Thêm dòng này để lưu refreshToken
-      localStorage.setItem('refreshToken', resJson.refreshToken)
-
       localStorage.setItem('role', user.role)
-      router.push('/home')
+      if (user.role === 'admin') {
+        router.push('/admin/overview')
+      } else if (user.role === 'business') {
+        router.push('/business/advertisement')
+      } else {
+        router.push('/home')
+      }
     } else {
       setIsLoggingIn(false)
       setSnack({ open: true, type: 'error', message: resJson.message })
     }
   }
-
-  console.log('user', user)
 
   return (
     <>

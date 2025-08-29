@@ -1,9 +1,16 @@
+const crypto = require("crypto");
 const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 const User = require("./../models/userModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const authService = require("./../services/authServices");
+const businessServices = require("./../services/businessServices");
+const signToken = (id, secret, expiresTime) => {
+    return jwt.sign({ id }, secret, {
+        expiresIn: expiresTime,
+    });
+};
 
 const createAccessToken = (user, res, expiresTime = "10000s") => {
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
@@ -29,12 +36,27 @@ const createRefreshToken = async (user, res) => {
             expiresIn: "10d",
         }
     );
-
     await User.findByIdAndUpdate(user._id, {
         refreshToken: refreshToken,
     });
-
-    return refreshToken;
+    const cookieOptionsRefresh = {
+        expires: new Date(
+            Date.now() +
+                process.env.JWT_COOKIE_REFRESH_TOKEN_EXPIRES_IN *
+                    24 *
+                    60 *
+                    60 *
+                    1000
+        ),
+        httpOnly: true,
+        secure: false,
+        sameSite: "none",
+    };
+    if (process.env.NODE_ENV === "production")
+        cookieOptionsRefresh.sameSite = "none";
+    if (process.env.NODE_ENV === "production")
+        cookieOptionsRefresh.secure = true;
+    res.cookie("refresh", refreshToken, cookieOptionsRefresh);
 };
 
 const createSendToken = async (
@@ -44,15 +66,13 @@ const createSendToken = async (
     expiresTime = "10000s"
 ) => {
     const token = createAccessToken(user, res, expiresTime);
-    const refreshToken = await createRefreshToken(user, res);
-
+    await createRefreshToken(user, res);
     // Remove password from output
     user.password = undefined;
 
     res.status(statusCode).json({
         status: "success",
         token,
-        refreshToken, // Thêm refreshToken vào response
         data: {
             user,
         },
@@ -60,33 +80,21 @@ const createSendToken = async (
 };
 
 exports.refreshToken = catchAsync(async (req, res, next) => {
-
-    let refreshToken;
-
-    if (
-        req.headers.authorization &&
-        req.headers.authorization.startsWith("Bearer")
-    ) {
-        refreshToken = req.headers.authorization.split(" ")[1];
-    }
-
-    if (!refreshToken) {
+    const cookies = req.cookies;
+    if (!cookies?.refresh)
         return next(
             new AppError(
                 "You are not logged in! Please log in to get access.",
                 401
             )
         );
-    }
-
-    const user = await User.findOne({ refreshToken: refreshToken });
+    const refreshToken = cookies.refresh;
+    const user = await User.find({ refreshToken: refreshToken });
     if (!user) return next(new AppError("Forbidden", 403));
-
     const decoded = await promisify(jwt.verify)(
         refreshToken,
         process.env.JWT_REFRESH_SECRET
     );
-
     const currentUser = await User.findById(decoded.id).populate("profile");
 
     if (!currentUser) {
@@ -97,7 +105,6 @@ exports.refreshToken = catchAsync(async (req, res, next) => {
             )
         );
     }
-
     const token = createAccessToken(currentUser, res);
 
     res.status(200).json({
@@ -138,6 +145,8 @@ exports.signup1 = catchAsync(async (req, res) => {
         data: {
             profile,
         },
+        message:
+            "An email has been sent to your email address. Please verify your email address to continue.",
     });
 });
 
@@ -268,47 +277,6 @@ exports.restrictTo = (...roles) => {
     };
 };
 
-// exports.forgotPassword = catchAsync(async (req, res, next) => {
-//   // 1) Get user based on POSTed email
-//   const user = await User.findOne({ email: req.body.email });
-//   if (!user) {
-//     return next(new AppError('There is no user with email address.', 404));
-//   }
-
-//   // 2) Generate the random reset token
-//   const resetToken = user.createPasswordResetToken();
-//   await user.save({ validateBeforeSave: false });
-
-//   // 3) Send it to user's email
-//   const resetURL = `${req.protocol}://${req.get(
-//     'host'
-//   )}/api/v1/users/resetPassword/${resetToken}`;
-
-//   const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
-
-//   try {
-//     await sendEmail({
-//       email: user.email,
-//       subject: 'Your password reset token (valid for 10 min)',
-//       message
-//     });
-
-//     res.status(200).json({
-//       status: 'success',
-//       message: 'Token sent to email!'
-//     });
-//   } catch (err) {
-//     user.passwordResetToken = undefined;
-//     user.passwordResetExpires = undefined;
-//     await user.save({ validateBeforeSave: false });
-
-//     return next(
-//       new AppError('There was an error sending the email. Try again later!'),
-//       500
-//     );
-//   }
-// });
-
 exports.resetPassword = catchAsync(async (req, res, next) => {
     await authService.resetPassword(req.body.email);
     res.status(200).json({
@@ -338,14 +306,14 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
     createSendToken(user, 200, res);
 });
 
-// exports.businessSignup = catchAsync(async (req, res) => {
-//   const profile = await authService.businessSignUp(req.body);
-//   res.status(201).json({
-//     status: "success",
-//     data: {
-//       profile,
-//     },
-//     message:
-//       "An email has been sent to your email address. Please verify your email address to continue to next steps",
-//   });
-// });
+exports.businessSignup = catchAsync(async (req, res) => {
+    const profile = await authService.businessSignUp(req.body);
+    res.status(201).json({
+        status: "success",
+        data: {
+            profile,
+        },
+        message:
+            "An email has been sent to your email address. Please verify your email address to continue to next steps",
+    });
+});

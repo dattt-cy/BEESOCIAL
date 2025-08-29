@@ -1,5 +1,6 @@
 'use client'
 import PersistentScrollView from '@/components/common/PersistentScrollView'
+import SuggestFollow from '@/components/SuggestFollow/SuggestFollow'
 import useResponsive from '@/hooks/useResponsive'
 import { Divider, Grid, Stack } from '@mui/material'
 import { Box } from '@mui/system'
@@ -31,7 +32,13 @@ const PostLayout = ({ children }: PostLayoutProps) => {
           padding: '0 22px',
           borderRadius: '10px'
         }}
-      ></Grid>
+      >
+        <Stack gap={3}>
+          <SuggestFollow />
+          {/* <Divider sx={{ color: 'rgba(204.44, 128.17, 240.32, 0.25)' }} />
+          <ListFollow /> */}
+        </Stack>
+      </Grid>
     </Box>
   )
 }

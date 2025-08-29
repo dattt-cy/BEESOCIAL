@@ -1,14 +1,23 @@
 const Post = require("./../models/postModel");
+const BusinessPost = require("./../models/businessPostModel");
 const LikePost = require("./../models/likePostModel");
 const User = require("./../models/userModel");
+const HashtagPost = require("./../models/hashtagPostModel");
 const AppError = require("./../utils/appError");
 const APIFeatures = require("./../utils/apiFeatures");
+const Hashtag = require("./../models/hashtagModel");
 
+const feedServices = require("./feedServices");
+const notiServices = require("./notificationServices");
+const followServices = require("./followServices");
 const { post } = require("jquery");
 
 const checkDeletingPermission = async (postId, reject, userId) => {
     // admins always have permission to delete post
     const user = await User.findById(userId);
+    if (user.role === "admin") {
+        return true;
+    }
     const post = await Post.findById(postId);
     if (!post) {
         reject(new AppError(`Post not found`, 404));
@@ -51,44 +60,34 @@ exports.createPost = (data) => {
             // set the root parent for sharing post
             let { content, images, imageVideo, categories, user, parent } =
                 data;
-
-            // Nếu có parent (shared post), kiểm tra parent tồn tại
             if (parent) {
                 const parentPost = await Post.findById(parent);
-                if (!parentPost || !parentPost.isActived) {
-                    return reject(new AppError(`Parent post not found`, 404));
+                if (parentPost.parent) {
+                    parent = parentPost.parent;
                 }
             }
-
             const post = await Post.create({
                 content: content,
                 images: images,
                 imageVideo: imageVideo,
                 categories: categories,
                 user: user,
-                parent: parent || null, // Thêm parent field
+                parent: parent,
+                isActived: true, // Thêm dòng này!
             });
 
             if (post) {
-                // Nếu là shared post, cập nhật số lượng share cho parent
+                const result = await Post.findById(post._id);
                 if (parent) {
-                    await Post.setNumShares(parent);
+                    const _ = await notiServices.createSharePostNotification(
+                        post._id.toString()
+                    );
+                    console.log(_);
                 }
-
-                // Lấy post vừa tạo với đầy đủ thông tin populate
-                const result = await Post.findById(post._id)
-                    .populate({
-                        path: "user",
-                        populate: { path: "profile" },
-                    })
-                    .populate({
-                        path: "parent",
-                        populate: {
-                            path: "user",
-                            populate: { path: "profile" },
-                        },
-                    });
-
+                const _ = await feedServices.addNewPostToFollowingUserFeed(
+                    post.id,
+                    user
+                );
                 resolve({
                     status: "success",
                     data: result,
@@ -180,22 +179,9 @@ exports.getPostsByMe = (userId) => {
             const posts = await Post.find({
                 user: userId,
                 isActived: true,
-            })
-                .populate({
-                    path: "user",
-                    populate: { path: "profile" },
-                })
-                .populate({
-                    path: "parent", // Populate parent post
-                    populate: {
-                        path: "user",
-                        populate: { path: "profile" },
-                    },
-                })
-                .sort({
-                    createdAt: -1,
-                });
-
+            }).sort({
+                createdAt: -1,
+            });
             const postsWithLikeStatus = await Promise.all(
                 posts.map(async (post) => {
                     const isLiked = (await LikePost.exists({
@@ -223,22 +209,9 @@ exports.getPostByUserId = (userId, myId) => {
             const posts = await Post.find({
                 user: userId,
                 isActived: true,
-            })
-                .populate({
-                    path: "user",
-                    populate: { path: "profile" },
-                })
-                .populate({
-                    path: "parent", // Populate parent post
-                    populate: {
-                        path: "user",
-                        populate: { path: "profile" },
-                    },
-                })
-                .sort({
-                    createdAt: -1,
-                });
-
+            }).sort({
+                createdAt: -1,
+            });
             const postsWithLikeStatus = await Promise.all(
                 posts.map(async (post) => {
                     const isLiked = (await LikePost.exists({
@@ -289,6 +262,11 @@ exports.likePost = (postId, userId) => {
                     user: userId,
                 });
 
+                const _ = await notiServices.createLikePostNotification(
+                    userId,
+                    postId
+                );
+                console.log(_);
                 resolve({
                     status: "success",
                     data: likePost,
@@ -320,6 +298,64 @@ exports.unlikePost = (postId, userId) => {
                     status: "success",
                 });
             }
+        } catch (err) {
+            reject(err);
+        }
+    });
+};
+
+exports.getPostsByHashtag = (hashtag, query, media = null) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!hashtag) {
+                reject(`Hashtag empty`, 400);
+            }
+            const hashtagId = await Hashtag.find({
+                name: { $regex: new RegExp(hashtag, "i") },
+            });
+            console.log(hashtagId);
+            if (hashtagId.length == 0)
+                resolve({
+                    status: "success",
+                    results: 0,
+                    data: null,
+                });
+            const hashtagPosts = await HashtagPost.find({
+                hashtag: hashtagId[0]._id,
+            });
+            if (!hashtagPosts) {
+                reject(new AppError(`Not found`, 404));
+            }
+            const postIds = hashtagPosts.map((post) => post.post.toString());
+
+            let filter = { _id: { $in: postIds } };
+            if (media === "media")
+                filter.$and = [
+                    { images: { $ne: null } }, // Ensure images is not null
+                    { "images.0": { $exists: true } }, // Ensure images has at least one element
+                ];
+
+            console.log(filter);
+            const postFeatures = new APIFeatures(Post.find(filter), query)
+                // .filter()
+                .limitFields()
+                .sort()
+                .paginate();
+            postFeatures.query = postFeatures.query.populate({
+                path: "user",
+                select: "_id email profile",
+                populate: {
+                    path: "profile",
+                    model: "Profile",
+                    select: "avatar firstname lastname slug",
+                },
+            });
+            const posts = await postFeatures.query;
+            resolve({
+                status: "success",
+                results: posts.length,
+                data: posts,
+            });
         } catch (err) {
             reject(err);
         }
@@ -360,6 +396,51 @@ exports.searchPosts = (searchText, query, media = null) => {
     });
 };
 
+exports.createBusinessPost = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let {
+                content,
+                images,
+                imageVideo,
+                categories,
+                user,
+                activeDate,
+                expireDate,
+                targetLocation,
+                targetGender,
+                targetAge,
+                potentialReach,
+            } = data;
+            if (!targetAge) {
+                targetAge = [0, 999];
+            }
+            const post = await BusinessPost.create({
+                content: content,
+                images: images,
+                imageVideo: imageVideo,
+                categories: categories,
+                user: user,
+                activeDate: activeDate,
+                expireDate: expireDate,
+                targetLocation: targetLocation,
+                targetGender: targetGender,
+                targetAge: targetAge,
+                potentialReach: potentialReach,
+            });
+
+            if (post) {
+                resolve({
+                    status: "success",
+                    data: post,
+                });
+            }
+        } catch (err) {
+            reject(err);
+        }
+    });
+};
+
 exports.getPostsFromProfile = (userId, query, myId = null) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -368,19 +449,7 @@ exports.getPostsFromProfile = (userId, query, myId = null) => {
             }
 
             const features = new APIFeatures(
-                Post.find({ user: userId, isActived: true })
-                    .populate({
-                        path: "user",
-                        populate: { path: "profile" },
-                    })
-                    .populate({
-                        path: "parent", // Populate parent post
-                        populate: {
-                            path: "user",
-                            populate: { path: "profile" },
-                        },
-                    })
-                    .lean(),
+                Post.find({ user: userId, isActived: true }).lean(),
                 query
             )
                 .sort()
@@ -454,18 +523,15 @@ exports.getLatestPostsByUser = (
 exports.getUsersLikingPost = (postId, userId, query) => {
     return new Promise(async (resolve, reject) => {
         try {
-            // 1) Validate postId
             if (!postId) {
                 return reject(new AppError(`Empty post Id`, 400));
             }
 
-            // 2) Kiểm tra post tồn tại và active
             const post = await Post.findById(postId);
-            if (!post || !post.isActived) {
+            if (!post || !post?.isActived) {
                 return reject(new AppError(`Post not found`, 404));
             }
 
-            // 3) Khởi tạo query lấy LikePost, populate user
             const features = new APIFeatures(
                 LikePost.find({ post: postId })
                     .populate({
@@ -479,25 +545,24 @@ exports.getUsersLikingPost = (postId, userId, query) => {
                 .sort()
                 .paginate();
 
-            // 4) Thực thi
-            const likeEntries = await features.query;
-
-            // 5) Map sang mảng User thuần (entry.user) và vẫn giữ userId truyền vào
-            //    (nếu cần dùng sau này, ví dụ ghi log, gắn thêm flags...)
-            const users = likeEntries.map((entry) => ({
-                ...entry.user,
-                // gắn thêm trường currentUserId cho client nếu bạn muốn
-                currentUserId: userId,
-            }));
-
-            // 6) Đếm tổng lượt thích
+            const users = await features.query;
+            const promises = users.map(async (user) => {
+                // console.log("0", userId, user._id.toString());
+                const isFollowing = (
+                    await followServices.isFollowing(userId, user.user._id)
+                ).data;
+                console.log(isFollowing);
+                user.user.profile.isFollowing = isFollowing;
+                return { ...user.user };
+            });
+            // const data = users.map((user) => user.user);
+            const data = await Promise.all(promises);
+            console.log(data);
             const total = await LikePost.countDocuments({ post: postId });
-
-            // 7) Trả về
             resolve({
                 status: "success",
-                total,
-                data: users,
+                total: total,
+                data: data,
             });
         } catch (err) {
             reject(err);
@@ -553,52 +618,81 @@ exports.getUsersSharingPost = (postId, userId, query) => {
     });
 };
 
-exports.getRandomPost = async function (userId) {
-    try {
-        // Lấy posts giống như getPostsByMe - KHÔNG dùng .lean()
-        const posts = await Post.find({ isActived: true })
-            .populate({
-                path: "user",
-                populate: { path: "profile" },
-            })
-            .populate({
-                path: "parent", // Populate parent post
-                populate: {
-                    path: "user",
-                    populate: { path: "profile" },
-                },
-            })
-            .sort({ createdAt: -1 });
-
-        // Kiểm tra shared posts
-        const sharedPosts = posts.filter((p) => p.parent);
-
-        if (!posts.length) {
-            throw new AppError("No posts found", 404);
-        }
-
-        // Process posts giống hệt như getPostsByMe
-        const postsWithLikeStatus = await Promise.all(
-            posts.map(async (post) => {
-                const isLiked = (await LikePost.exists({
-                    post: post._id,
+exports.getSharedPostsByUser = (userId, query) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!userId) {
+                return reject(new AppError(`Please fill user id`, 400));
+            }
+            console.log(query);
+            const features = new APIFeatures(
+                Post.find({
                     user: userId,
-                }))
-                    ? true
-                    : false;
+                    parent: { $ne: null },
+                    isActived: true,
+                }).lean(),
+                query
+            )
+                .paginate()
+                .sort();
 
-                return { ...post.toObject(), isLiked }; // Dùng .toObject() như getPostsByMe
-            })
-        );
+            const posts = await features.query;
 
-        const finalShared = postsWithLikeStatus.filter((p) => p.parent);
+            const promises = posts.map(async (post) => {
+                const isLiked = (
+                    await this.isPostLikedByUser(post._id.toString(), userId)
+                ).data;
+                return { ...post, isLiked };
+            });
 
-        return {
-            status: "success",
-            total: postsWithLikeStatus.length,
-            data: postsWithLikeStatus,
-        };
-    } catch (error) {
-        throw error;
-    }
+            const result = await Promise.all(promises);
+            resolve({
+                status: "success",
+                total: result.length ?? 0,
+                data: result,
+            });
+        } catch (err) {
+            return reject(err);
+        }
+    });
+};
+
+exports.getLikedPostsByUser = (userId, query) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!userId) {
+                return reject(new AppError(`Please fill user id`, 400));
+            }
+            query.sort = "-createdAt";
+            const features = new APIFeatures(
+                LikePost.find({ user: userId }).populate("post").lean(),
+                query
+            )
+                .paginate()
+                .sort();
+
+            const likeposts = await features.query;
+
+            let posts = likeposts.map((post) => post.post);
+            // posts = posts.filter((post) => post.isActived === true);
+            posts = posts.filter(
+                (post) =>
+                    post?.isActived !== false &&
+                    !post?.parent?.isActived !== false
+            );
+            console.log(posts[0]);
+            const result = posts.map((post) => ({
+                ...post,
+                isLiked: true,
+            }));
+
+            resolve({
+                status: "success",
+                total: result.length ?? 0,
+                data: result,
+            });
+        } catch (err) {
+            return reject(err);
+        }
+    });
 };

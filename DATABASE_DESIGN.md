@@ -1,579 +1,297 @@
-# 🗄️ Thiết kế Cơ sở Dữ liệu - DevShare Lite
+# 🗄️ Database Design — BEESOCIAL 
+## 📋 Overview
 
-## 📋 Tổng quan
-
-**DevShare Lite** sử dụng **MongoDB** - một NoSQL document database để lưu trữ dữ liệu. Hệ thống được thiết kế với **7 collections chính**, tối ưu cho việc lưu trữ và truy xuất dữ liệu của một mạng xã hội với các tính năng tương tác đa dạng.
-
-## 🎯 Lý do lựa chọn MongoDB
-
-### Ưu điểm cho DevShare Lite:
-
--   **Linh hoạt Schema**: Dễ dàng thêm/sửa fields mà không cần migration phức tạp
--   **Hiệu suất cao**: Truy vấn nhanh với indexing tối ưu
--   **Scalability**: Dễ mở rộng horizontal khi người dùng tăng
--   **JSON-like Structure**: Phù hợp với Node.js và React ecosystem
--   **Rich Queries**: Hỗ trợ aggregate, population, virtual fields
--   **Social Media Ready**: Tối ưu cho data structure của mạng xã hội
+BEESOCIAL uses MongoDB (document DB). This document is a corrected and consolidated design based on the actual Mongoose models in the project. It lists main collections, important fields, indexes, and common query patterns. Avoid changing semantics — only clarifications, consistency fixes and small improvements were applied.
 
 ---
 
-## 🏗️ Kiến trúc Collections
+## 🏗️ Collections (summary)
 
-### Sơ đồ mối quan hệ (Collections Relationship Diagram)
+Core collections:
 
-```
-┌─────────────┐     1:1     ┌─────────────┐
-│    User     │ ◄─────────► │   Profile   │
-│   (_id)     │             │    (user)   │
-└─────────────┘             └─────────────┘
-       │                           │
-       │ 1:N                       │
-       ▼                           ▼
-┌─────────────┐             ┌─────────────┐
-│    Post     │             │   Comment   │
-│   (user)    │ ◄─────────► │   (user)    │
-│  (parent)   │     1:N     │   (post)    │
-└─────────────┘             │  (parent)   │
-       │                    └─────────────┘
-       │ 1:N                       │
-       ▼                           │ 1:N
-┌─────────────┐                    ▼
-│  LikePost   │             ┌─────────────┐
-│   (user)    │             │CommentLike  │
-│   (post)    │             │   (user)    │
-└─────────────┘             │  (comment)  │
-       │                    └─────────────┘
-       │ 1:N
-       ▼
-┌─────────────┐
-│ SharePost   │
-│  (sharer)   │
-│   (post)    │
-└─────────────┘
-```
+-   users
+-   profiles
+-   posts
+-   comments
+-   likeposts
+-   commentlikes
+-   shareposts
+
+Auxiliary collections (examples from codebase):
+
+-   categories, categoryposts
+-   hashtags, hashtagposts, trendingHashtags, trendingPosts
+-   notifications
+-   follow, feed
+-   reports
+-   businessRequest, businessPost, postTransaction, unitPrice, advertisementPlan
+-   issueTypes, userPreferences
 
 ---
 
-## 📊 Chi tiết Collections
+## 📊 Collection details (aligned with models)
 
-### 1. 👤 User Collection
+### 1. users
 
-**Mục đích**: Lưu trữ thông tin đăng nhập và quyền hạn người dùng.
+Purpose: authentication and account metadata.
+
+Example fields (reflects backend/models/userModel.js):
 
 ```javascript
 {
-  _id: ObjectId,           // Primary Key
-  email: String,           // Unique, Required
-  phonenumber: String,     // Optional
-  role: String,            // Enum: ["user", "admin"]
-  isActived: Boolean,      // Default: true
-  password: String,        // Hashed, Select: false
-  passwordConfirm: String, // Validation only
-  passwordChangedAt: Date, // Password change tracking
-  preferences: [ObjectId], // Reference to Category
-  refreshToken: String,    // JWT refresh token
-  verifyToken: String,     // Email verification
-  verify: Boolean,         // Default: true
-  createdAt: Date         // Auto timestamp
+  _id,
+  email: String (unique, required, lowercase),
+  phonenumber: String,
+  role: String enum ["user","business","admin"],
+  isActived: Boolean,
+  password: String (hashed, select:false),
+  passwordConfirm: (validation only),
+  passwordChangedAt: Date,
+  preferences: [ObjectId ref Category],
+  refreshToken: String,
+  verifyToken: String,
+  verify: Boolean,
+  approved: Boolean,
+  createdAt: Date
 }
 ```
 
-#### Indexes:
+Important:
 
--   `email`: Unique index
--   `role`: Performance index
--   `isActived`: Query optimization
-
-#### Virtual Population:
-
-```javascript
-profile: {
-  ref: "Profile",
-  foreignField: "user",
-  localField: "_id",
-  justOne: true
-}
-```
-
-#### Middleware:
-
--   **Pre-save**: Hash password với bcrypt (cost: 12)
--   **Pre-find**: Auto populate profile, exclude sensitive fields
+-   Virtual: profile (one-to-one) via Profile.user
+-   Indexes: email (unique), role, isActived
+-   Pre-save: bcrypt hashing, remove passwordConfirm
+-   Pre-find: populate profile, exclude sensitive tokens (models sometimes use active vs isActived — queries use active check in some pre-hooks; keep consistent to isActived)
 
 ---
 
-### 2. 📝 Profile Collection
+### 2. profiles
 
-**Mục đích**: Lưu trữ thông tin cá nhân và hiển thị của người dùng.
+Purpose: public profile info.
+
+Fields (reflects backend/models/profileModel.js):
 
 ```javascript
 {
-  _id: ObjectId,        // Primary Key
-  firstname: String,    // Required, 2-20 chars
-  lastname: String,     // Required, 2-20 chars
-  slug: String,         // Unique, 4-30 chars, URL-friendly
-  gender: Boolean,      // Required (true/false)
-  avatar: String,       // Cloudinary URL
-  background: String,   // Background image URL
-  address: String,      // Optional
-  bio: String,          // User description
-  birthday: Date,       // Optional
-  user: ObjectId        // Reference to User (1:1)
+  firstname, lastname, slug (unique),
+  gender (Boolean),
+  avatar, background, address, bio, birthday,
+  user: ObjectId ref User (unique index)
 }
 ```
 
-#### Constraints:
+Rules:
 
--   **firstname/lastname**: Regex validation `^[a-zA-Z0-9_\p{L}]+$`
--   **slug**: Regex validation `^[a-zA-Z0-9_]+$`, unique
--   **user**: Unique index (1:1 relationship)
-
-#### Business Rules:
-
--   Slug được sử dụng cho URL profile: `/profile/{slug}`
--   Avatar và background được lưu trên Cloudinary
+-   firstname/lastname: regex /^[a-zA-Z0-9_\p{L}]+$/u
+-   slug: /^[a-zA-Z0-9_]+$/ , unique
+-   Index: { user: 1 } unique
 
 ---
 
-### 3. 📄 Post Collection
+### 3. posts
 
-**Mục đích**: Lưu trữ bài viết, nội dung chia sẻ và các hoạt động trên mạng xã hội.
+Purpose: user posts; supports sharing via parent.
+
+Fields (reflects backend/models/postModel.js):
 
 ```javascript
 {
-  _id: ObjectId,        // Primary Key
-  title: String,        // Optional
-  content: String,      // Max: 8192 chars
-  images: [String],     // Max: 4 images, Cloudinary URLs
-  user: ObjectId,       // Reference to User
-  parent: ObjectId,     // Reference to parent post (for sharing)
-  numLikes: Number,     // Auto calculated
-  numComments: Number,  // Auto calculated
-  numShares: Number,    // Auto calculated
-  createdAt: Date,      // Auto timestamp
-  isActived: Boolean    // Default: true, soft delete
+  _id,
+  content: String (trimmed, max ~8192),
+  images: [String] (<=4),
+  imageVideo: String,
+  categories: [ObjectId ref Category],
+  user: ObjectId ref User (required),
+  parent: ObjectId ref Post (for shares),
+  numLikes, numComments, numShares,
+  createdAt,
+  isActived: Boolean
 }
 ```
 
-#### Validation:
+Important:
 
--   **content**: Max 8192 characters, trimmed
--   **images**: Max 4 images per post
--   **user**: Required reference
+-   Pre-find: populate user -> profile and categories, populate parent (shared post)
+-   Post-save: update parent's numShares; extract hashtags and create Hashtag + HashtagPost entries
+-   Pre findOneAndUpdate: keep hashtag relations in sync (delete removed, add new)
 
-#### Auto Population:
+Indexes:
 
-```javascript
-user: {
-  path: "user",
-  select: "_id email profile role",
-  populate: {
-    path: "profile",
-    select: "avatar firstname lastname slug"
-  }
-}
-```
-
-#### Sharing Feature:
-
--   **Original posts**: `parent = null`
--   **Shared posts**: `parent = originalPostId`
--   Auto update `numShares` counter
+-   { user: 1 }, { createdAt: -1 }, { isActived: 1 }, { parent: 1 }
 
 ---
 
-### 4. 💬 Comment Collection
+### 4. comments
 
-**Mục đích**: Hệ thống comment có cấu trúc cây (threaded comments).
+Purpose: threaded comments with unlimited nesting.
+
+Fields (reflects backend/models/commentModel.js):
 
 ```javascript
 {
-  _id: ObjectId,        // Primary Key
-  content: String,      // Required, 1-1000 chars
-  user: ObjectId,       // Reference to User
-  post: ObjectId,       // Reference to Post
-  numLikes: Number,     // Auto calculated
-  parent: ObjectId,     // Self-reference for replies
-  numReplies: Number,   // Auto calculated
-  createdAt: Date       // Auto timestamp
+  _id,
+  content: String (1-1000, required),
+  user: ObjectId ref User,
+  post: ObjectId ref Post,
+  parent: ObjectId ref Comment (nullable),
+  numLikes: Number,
+  numReplies: Number,
+  createdAt
 }
 ```
 
-#### Hierarchical Structure:
+Behavior:
 
--   **Root comments**: `parent = null`
--   **Replies**: `parent = commentId`
--   **Nested replies**: Support unlimited depth
+-   post-save: update Post.numComments and parent.numReplies when applicable
+-   pre/post findOneAndDelete: store deleted doc then recalc counts
+-   pre-find: populate user -> profile
 
-#### Auto Calculation Middleware:
+Indexes:
 
--   **Post hooks**: Update `numComments` in Post
--   **Delete hooks**: Recalculate counts when deleted
-
----
-
-### 5. ❤️ LikePost Collection
-
-**Mục đích**: Theo dõi like/unlike của bài viết.
-
-```javascript
-{
-  _id: ObjectId,        // Primary Key
-  user: ObjectId,       // Reference to User
-  post: ObjectId,       // Reference to Post
-  createdAt: Date       // Auto timestamp
-}
-```
-
-#### Constraints:
-
--   **Composite Unique Index**: `{user: 1, post: 1}`
--   Một user chỉ like được 1 lần cho mỗi post
-
-#### Auto Update Logic:
-
-```javascript
-// Tự động cập nhật numLikes trong Post
-post.numLikes = await LikePost.countDocuments({ post: postId });
-```
+-   { post: 1 }, { parent: 1 }, { user: 1 }
 
 ---
 
-### 6. 💝 CommentLike Collection
+### 5. likeposts
 
-**Mục đích**: Theo dõi like/unlike của comment.
+Purpose: track likes on posts.
 
-```javascript
-{
-  _id: ObjectId,        // Primary Key
-  comment: ObjectId,    // Reference to Comment
-  user: ObjectId,       // Reference to User
-  createdAt: Date       // Auto timestamp
-}
-```
-
-#### Constraints:
-
--   **Composite Unique Index**: `{user: 1, comment: 1}`
--   Một user chỉ like được 1 lần cho mỗi comment
-
-#### Auto Update Logic:
+Fields:
 
 ```javascript
-// Tự động cập nhật numLikes trong Comment
-comment.numLikes = await CommentLike.countDocuments({ comment: commentId });
+{ user: ObjectId ref User, post: ObjectId ref Post, createdAt }
 ```
+
+Constraints:
+
+-   Composite unique index { user:1, post:1 }
+
+Behavior:
+
+-   post-save & post-delete: recalc Post.numLikes
+
+Indexes:
+
+-   { user:1, post:1 } unique, { post:1 }
 
 ---
 
-### 7. 🔄 SharePost Collection
+### 6. commentlikes
 
-**Mục đích**: Theo dõi việc chia sẻ bài viết.
+Purpose: track likes on comments.
+
+Fields:
 
 ```javascript
-{
-  _id: ObjectId,        // Primary Key
-  sharer: ObjectId,     // Reference to User (người share)
-  post: ObjectId,       // Reference to Post (bài được share)
-  createdAt: Date       // Auto timestamp
-}
+{ comment: ObjectId, user: ObjectId, createdAt }
 ```
 
-#### Business Logic:
+Constraints:
 
--   Cho phép user share nhiều lần cùng một bài viết
--   Tự động cập nhật `numShares` trong Post model
--   Tạo shared post với `parent` reference
+-   Composite unique index { user:1, comment:1 }
+
+Behavior:
+
+-   post-save & post-delete: recalc Comment.numLikes
+
+Indexes:
+
+-   { user:1, comment:1 } unique, { comment:1 }
 
 ---
 
-## 🔍 Query Patterns & Indexing Strategy
+### 7. shareposts
 
-### Performance Indexes
+Purpose: support analytics for shares (model: SharePost).
 
-```javascript
-// User Collection
-db.users.createIndex({ email: 1 }, { unique: true });
-db.users.createIndex({ role: 1 });
-db.users.createIndex({ isActived: 1 });
-
-// Profile Collection
-db.profiles.createIndex({ user: 1 }, { unique: true });
-db.profiles.createIndex({ slug: 1 }, { unique: true });
-
-// Post Collection
-db.posts.createIndex({ user: 1 });
-db.posts.createIndex({ createdAt: -1 });
-db.posts.createIndex({ isActived: 1 });
-db.posts.createIndex({ parent: 1 });
-
-// Comment Collection
-db.comments.createIndex({ post: 1 });
-db.comments.createIndex({ parent: 1 });
-db.comments.createIndex({ user: 1 });
-
-// LikePost Collection
-db.likeposts.createIndex({ user: 1, post: 1 }, { unique: true });
-db.likeposts.createIndex({ post: 1 });
-
-// CommentLike Collection
-db.commentlikes.createIndex({ user: 1, comment: 1 }, { unique: true });
-db.commentlikes.createIndex({ comment: 1 });
-
-// SharePost Collection
-db.shareposts.createIndex({ post: 1 });
-db.shareposts.createIndex({ sharer: 1 });
-```
-
-### Common Query Patterns
-
-#### 1. Feed Timeline (Newsfeed)
+Fields:
 
 ```javascript
-// Lấy bài viết mới nhất với thông tin user và interaction counts
-Post.find({ isActived: true })
-    .populate("user", "email profile")
-    .populate("parent") // For shared posts
-    .sort({ createdAt: -1 })
-    .limit(20);
+{ sharer: ObjectId ref User, post: ObjectId ref Post, createdAt }
 ```
 
-#### 2. Post with Comments (Threaded)
+Behavior:
 
-```javascript
-// Lấy bài viết với comments và replies
-const post = await Post.findById(postId);
-const rootComments = await Comment.find({
-    post: postId,
-    parent: null,
-}).sort({ createdAt: -1 });
+-   Creating a shared Post (parent reference) and a SharePost document; Post.setNumShares updates counts.
 
-const replies = await Comment.find({
-    post: postId,
-    parent: { $in: rootCommentIds },
-});
-```
+Indexes:
 
-#### 3. User Profile with Posts
-
-```javascript
-// Profile page với posts của user
-const profile = await Profile.findOne({ slug: userSlug }).populate("user");
-
-const userPosts = await Post.find({
-    user: profile.user._id,
-    isActived: true,
-}).sort({ createdAt: -1 });
-```
-
-#### 4. Check Like Status
-
-```javascript
-// Kiểm tra user đã like post/comment chưa
-const isLiked = await LikePost.exists({
-    user: userId,
-    post: postId,
-});
-
-const commentLiked = await CommentLike.exists({
-    user: userId,
-    comment: commentId,
-});
-```
-
-#### 5. Share Post Flow
-
-```javascript
-// Chia sẻ bài viết
-const sharedPost = await Post.create({
-    content: shareContent,
-    user: sharerId,
-    parent: originalPostId,
-});
-
-// Track sharing activity
-await SharePost.create({
-    sharer: sharerId,
-    post: originalPostId,
-});
-
-// Update share count
-await Post.setNumShares(originalPostId);
-```
+-   { post:1 }, { sharer:1 }
 
 ---
 
-## 🚀 Optimization Strategies
+## 🔗 Other models (quick notes)
 
-### 1. **Denormalization for Performance**
-
--   `numLikes`, `numComments`, `numShares` được lưu trực tiếp trong Post
--   `numLikes`, `numReplies` được lưu trực tiếp trong Comment
--   Giảm expensive COUNT queries
-
-### 2. **Soft Delete Pattern**
-
--   `isActived: false` thay vì xóa hard
--   Có thể khôi phục data và maintain referential integrity
-
-### 3. **Virtual Population**
-
--   User ↔ Profile relationship qua virtual fields
--   Giảm số lượng queries cần thiết
-
-### 4. **Middleware Automation**
-
--   Auto hash password
--   Auto update counters
--   Auto populate related data
-
-### 5. **Composite Indexes**
-
--   `{user, post}` cho LikePost
--   `{user, comment}` cho CommentLike
--   Đảm bảo uniqueness và performance
+-   notifications: recipient (User), type enum, actors array (strings), contentId, subContentId, read flag. Post-save pushes to Pusher.
+-   feed: user + post + type (following/suggested/advertisement), seen flag, dateToBeSeen
+-   follow: follower/following pairs
+-   report: reporter, post, reason, status, processingDate
+-   hashtags & hashtagposts: keep many-to-many relation between posts and hashtags; index by hashtag and createdAt
+-   trendingHashtag / trendingPost: aggregated data for trends (pre-find population implemented)
+-   business models (BusinessRequest, BusinessPost, PostTransaction, UnitPrice, AdvertisementPlan): used for promoted posts & billing. BusinessPost is a discriminator of Post.
 
 ---
 
-## 📈 Scalability Considerations
+## 🔍 Indexing strategy (recommendations)
 
-### 1. **Horizontal Scaling**
+Create indexes used by models and queries:
 
--   MongoDB sharding trên `user` field
--   Distribute data based on user activity
-
-### 2. **Read Replicas**
-
--   Master-Slave setup cho read-heavy operations
--   Feed queries đọc từ replicas
-
-### 3. **Caching Strategy**
-
--   Redis cache cho:
-    -   User sessions (JWT)
-    -   Popular posts
-    -   User profiles
-    -   Comment trees
-
-### 4. **Archive Strategy**
-
--   Move old posts (>1 year) to archive collections
--   Keep active data small and fast
+-   users: { email:1 } unique, { role:1 }, { isActived:1 }
+-   profiles: { user:1 } unique, { slug:1 } unique
+-   posts: { user:1 }, { createdAt: -1 }, { isActived:1 }, { parent:1 }
+-   comments: { post:1 }, { parent:1 }, { user:1 }
+-   likeposts: { user:1, post:1 } unique, { post:1 }
+-   commentlikes: { user:1, comment:1 } unique, { comment:1 }
+-   feed: { user:1 }
+-   hashtagpost: { hashtag:-1 }, { createdAt:-1 }
+-   shareposts: { post:1 }, { sharer:1 }
 
 ---
 
-## 🔒 Security & Data Integrity
+## ✅ Common query patterns (aligned with code)
 
-### 1. **Password Security**
+-   Feed timeline:
+    Post.find({ isActived: true }).populate("user", ...).populate("parent").sort({ createdAt: -1 }).limit(20)
 
--   bcrypt hashing với cost factor 12
--   Password strength validation
--   Password change tracking
+-   Post with threaded comments:
+    fetch root comments (parent:null) then fetch replies by parent in rootCommentIds
 
-### 2. **Data Validation**
+-   Profile page:
+    Profile.findOne({ slug }).populate("user"); Post.find({ user: profile.user.\_id, isActived: true }).sort({ createdAt: -1 });
 
--   Mongoose schema validation
--   Custom validators cho business rules
--   Input sanitization
+-   Check like status:
+    LikePost.exists({ user: userId, post: postId })
 
-### 3. **Access Control**
-
--   Role-based permissions
--   User can only edit own content
--   Admin override capabilities
-
-### 4. **Audit Trail**
-
--   `createdAt` timestamps
--   `passwordChangedAt` tracking
--   Soft delete preserves history
+-   Share flow:
+    create Post with parent set, create SharePost, call Post.setNumShares(originalPostId)
 
 ---
 
-## 🔄 Business Logic Implementation
+## 🚀 Optimizations & best practices
 
-### 1. **Auto Counter Updates**
-
-```javascript
-// Trong postModel.js
-PostSchema.statics.setNumShares = async function (postId) {
-    let numShares = 0;
-    if (postId) {
-        numShares = await this.countDocuments({ parent: postId });
-    }
-    await this.findByIdAndUpdate(postId, { numShares: numShares });
-};
-
-// Trong commentModel.js
-CommentSchema.statics.setNumComments = async function (postId) {
-    let numComments = 0;
-    if (postId) {
-        numComments = await this.countDocuments({ post: postId });
-    }
-    await Post.findByIdAndUpdate(postId, { numComments: numComments });
-};
-```
-
-### 2. **Middleware Hooks**
-
-```javascript
-// Auto update sau khi save
-CommentSchema.post("save", async function (doc, next) {
-    if (doc) {
-        await doc.constructor.setNumComments(doc.post);
-        if (doc.parent) {
-            await doc.constructor.setNumReplies(doc.parent);
-        }
-    }
-    next();
-});
-
-// Auto update sau khi delete
-CommentSchema.post(/^findOneAndDelete/, async function (doc, next) {
-    if (doc) {
-        await this.deletedComment.constructor.setNumComments(
-            this.deletedComment.post
-        );
-    }
-    next();
-});
-```
-
-### 3. **Population Strategy**
-
-```javascript
-// Auto populate trong pre-find middleware
-PostSchema.pre(/^find/, function (next) {
-    this.populate({
-        path: "user",
-        select: "_id email profile role",
-        populate: {
-            path: "profile",
-            model: "Profile",
-            select: "avatar firstname lastname -user slug",
-        },
-    }).populate({
-        path: "parent", // Populate shared post
-        populate: {
-            path: "user",
-            populate: { path: "profile" },
-        },
-    });
-    next();
-});
-```
+-   Denormalize counters (numLikes, numComments, numReplies, numShares) and maintain via model hooks (already implemented).
+-   Soft-delete pattern: use isActived (ensure hooks and queries consistently use isActived, not active).
+-   Use virtual population (User ↔ Profile) to avoid extra collections loads.
+-   Avoid N+1 on likes: consider bulk lookups (e.g., fetch LikePost documents for a page of posts and map).
+-   Cache hot data (popular posts, frequently requested profiles) in Redis.
+-   Archive old posts (>1 year) if required.
 
 ---
 
-## 🏁 Kết luận
+## 🔒 Security & integrity
 
-Thiết kế database này tối ưu cho:
+-   Keep password hashing (bcrypt) and passwordChangedAt semantics.
+-   Use proper validators as implemented in schemas.
+-   Ensure tokens (refreshToken, verifyToken) are not returned in API responses (models already select them out in pre-find).
+-   Index uniqueness to enforce constraints (slug, email, composite likes).
 
--   **Performance**: Fast queries với proper indexing và denormalization
--   **Scalability**: Dễ mở rộng khi user base tăng với sharding strategy
--   **Flexibility**: Schema linh hoạt cho feature mới như sharing posts
--   **Integrity**: Referential integrity và data consistency qua middleware
--   **User Experience**: Real-time updates và responsive interactions
--   **Social Features**: Hỗ trợ đầy đủ like, comment, share với hierarchical structure
+---
 
-Database structure hỗ trợ đầy đủ các tính năng của một mạng xã hội hiện đại với khả năng mở rộng trong tương lai, bao gồm cả tính năng chia sẻ bài viết và comment có cấu trúc
+## ⚠️ Minor fixes / recommendations applied
+
+-   Standardized field names: prefer isActived (used in many models). Search codebase for any remaining uses of "active" and align.
+-   Fixed regex Unicode flags in profile validation (u flag used).
+-   Clarified hashtag extract behavior in Post model and ensured HashtagPost operations use correct post ids.
+-   Noted places where pre/post hooks call next() multiple times — inspect PostSchema.post("save") (there was an extra next()).
+
+---

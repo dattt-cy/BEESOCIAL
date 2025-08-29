@@ -14,7 +14,6 @@ import {
   ListItemText,
   Modal
 } from '@mui/material'
-import parse from 'html-react-parser'
 import Slider from '@/components/Posts/ImageSlider'
 import HeartIcon from '../common/HeartIcon'
 import RootModal from '@/components/common/modals/RootModal'
@@ -31,6 +30,7 @@ import { timeSince } from '@/utils/changeDate'
 import useAxiosPrivate from '@/hooks/useAxiosPrivate'
 import urlConfig from '@/config/urlConfig'
 import { Comment } from '@/types/comment'
+import HashtagWrapper from '@/components/common/HashtagWrapper'
 import EmojiPicker from '../common/EmojiPicker'
 import _ from 'lodash'
 import { usePosts } from '@/context/PostContext'
@@ -39,6 +39,7 @@ import { useRouter } from 'next/navigation'
 import UserLikedList from './UserLikedList'
 import SharePostList from './SharePostList'
 import { User } from '@/types/user'
+
 // find the root of children comment
 function findRootComment(comments: Comment[], comment: Comment | null | undefined): Comment | null {
   if (!comment) return null
@@ -59,12 +60,6 @@ interface PostDetailProps {
   handleClose: () => void
 }
 
-function decodeHtmlEntities(html: string) {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(html, 'text/html')
-  return doc.documentElement.textContent || ''
-}
-
 const PostDetail = ({ post, open, handleClose, handleLike, postParent }: PostDetailProps) => {
   const { postsDispatch } = usePosts()
   const [newPost, setNewPost] = React.useState<Post | null>(null)
@@ -79,9 +74,6 @@ const PostDetail = ({ post, open, handleClose, handleLike, postParent }: PostDet
   const [isFollowing, setIsFollowing] = React.useState(post.isFollowing)
   const [openUserLikeList, setOpenUserLikeList] = React.useState(false)
   const [openSharePostList, setOpenSharePostList] = React.useState(false)
-
-  let html = post.content
-  html = decodeHtmlEntities(html)
 
   const router = useRouter()
 
@@ -134,10 +126,15 @@ const PostDetail = ({ post, open, handleClose, handleLike, postParent }: PostDet
 
   const handleFollow = async (event: any) => {
     event.stopPropagation()
-
-    setIsFollowing(!isFollowing)
-
-    console.log('Follow feature temporarily disabled')
+    try {
+      if (isFollowing) {
+        setIsFollowing(false)
+        await axiosPrivate.delete(urlConfig.me.unFollowOtherUser(post.user._id))
+      } else {
+        setIsFollowing(true)
+        await axiosPrivate.post(urlConfig.me.followingOtherUser, { id: post.user._id })
+      }
+    } catch (error) {}
   }
 
   const navigateToProfile = (event: any) => {
@@ -343,14 +340,14 @@ const PostDetail = ({ post, open, handleClose, handleLike, postParent }: PostDet
                           </Stack>
                         </Stack>
                         <Box
-                          component='div'
                           sx={{
                             margin: isMobile ? '5px 0' : '10px 0',
                             fontSize: isMobile ? '13px' : '14px',
                             width: '90%'
                           }}
-                          dangerouslySetInnerHTML={{ __html: html }}
-                        />
+                        >
+                          {post.content && <HashtagWrapper text={post.content} />}
+                        </Box>
                       </Box>
                     </Stack>
                   </Stack>

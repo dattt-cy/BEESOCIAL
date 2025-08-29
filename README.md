@@ -1,192 +1,120 @@
-# 💻 DevShare Lite
+# 💻 BEESOCIAL
 
-Một mạng xã hội hiện đại, nơi người dùng có thể kết nối, chia sẻ nội dung, tương tác và xây dựng cộng đồng trực tuyến.
+A modern social network where users can connect, share content, interact, and build online communities.
 
-## 👨‍💻 Thông tin tác giả
+## 👨‍💻 Author information
 
--   **Trường**: Đại Học Bách Khoa Đại Học Đà Nẵng
--   **MSSV**: 102230063
--   **Họ tên**: Hoàng Văn Tấn Đạt
+-   **School**: University of Science and Technology - The University of Danang
+-   **Student ID**: 102230063
+-   **Full name**: Hoang Van Tan Dat
 
-## 📋 Tổng quan dự án
+## 📋 Project overview
 
-**DevShare Lite** là một mạng xã hội được thiết kế để cho phép người dùng kết nối với bạn bè, chia sẻ nội dung cá nhân và tương tác trong một cộng đồng trực tuyến. Nền tảng tập trung vào việc tạo ra một môi trường mạng xã hội thân thiện và dễ sử dụng với các tính năng:
+**BEESOCIAL** is a social network designed to allow users to connect with friends, share personal content, and interact within an online community. The platform focuses on creating a friendly and easy-to-use social environment with features:
 
-### 🎯 Chức năng chính đã thực hiện
+### 🎯 Main implemented features
 
-#### 📝 Chia sẻ nội dung đa phương tiện
+#### 🔐 Account management & authentication
 
--   **Tạo bài viết**: Hỗ trợ Rich Text Editor cho nội dung phong phú
--   **Media upload**: Hỗ trợ hình ảnh, video (tích hợp Cloudinary)
--   **Chỉnh sửa**: Edit và xóa bài viết của chính mình
+-   4-step registration.
+-   Login/logout using JWT.
+-   Profile management: avatar, background, bio, contact information.
+-   Protect routes that require auth and check permissions for editing content.
 
-#### 💬 Hệ thống tương tác xã hội
+#### 📝 Create & manage content
 
--   **Comment threading**: Bình luận phân cấp đa cấp độ
--   **Like/Unlike**: Thả tim cho bài viết và bình luận
--   **Share**: Chia sẻ bài viết của người khác
--   **Reply**: Phản hồi và thảo luận
+-   Create posts.
+-   Upload images/videos via Cloudinary; edit & delete posts.
+-   Share other users' posts.
 
-#### 👥 Kết nối cộng đồng
+#### 💬 Social interactions
 
--   **Hệ thống tài khoản**: Đăng ký và quản lý profile cá nhân
--   **Profile management**: Quản lý thông tin cá nhân, avatar, background
--   **Follow system**: Theo dõi và kết nối với người dùng khác
+-   Nested comments (reply/thread), like/unlike for posts and comments.
+-   View list of users who liked/shared.
+-   Notifications: create notifications (Pusher/Realtime configured for future realtime expansion).
 
-#### 🔍 Khám phá và kết nối
+#### 🔍 Discover & search
 
--   **Newsfeed**: Feed bài viết từ bạn bè và người theo dõi
--   **Advanced search**: Tìm kiếm người dùng và bài viết
--   **Responsive design**: Tối ưu cho mobile và desktop
--   **Real-time interactions**: Cập nhật tương tác theo thời gian thực
+-   Newsfeed with infinite scroll / pagination (cursor/page).
+-   Search users and posts by keywords, categorized tabs (User/Post/Media).
 
-## 🚀 Công nghệ sử dụng
+#### 📱 User experience & performance
+
+-   Responsive design (mobile & desktop).
+-   Optimistic UI on the client for instant experience (realtime emit needs enabling to complete).
+-   Basic backend optimizations: .lean(), APIFeatures (filter/sort/paginate). Note: N+1 issue exists for likes (bulk lookup recommended).
+
+#### 🔒 Security & operations
+
+-   User authorization (only edit your own content).
+-   Protect routes requiring login.
+-   Data validation and API security.
+
+## 🚀 Technologies used
 
 ### Frontend (`frontend`)
 
-| Công nghệ             | Phiên bản | Lý do lựa chọn                                         |
-| --------------------- | --------- | ------------------------------------------------------ |
-| **Next.js**           | 14+       | Framework React modern với SSR/SSG, tối ưu performance |
-| **TypeScript**        | Latest    | Type safety, giảm bug runtime, IDE support tốt         |
-| **Material-UI (MUI)** | v5        | Component library phong phú, design system nhất quán   |
-| **React Context API** | Built-in  | State management đơn giản, phù hợp với quy mô dự án    |
-| **ReactQuill**        | Latest    | Rich text editor mạnh mẽ cho việc tạo nội dung         |
-| **Axios**             | Latest    | HTTP client với interceptors, xử lý JWT tự động        |
-| **Cloudinary**        | SDK       | Cloud storage cho media, tối ưu hình ảnh tự động       |
+| Technology            | Version  | Reason for choice                                              |
+| --------------------- | -------- | -------------------------------------------------------------- |
+| **Next.js**           | 14+      | Modern React framework with SSR/SSG, performance optimizations |
+| **TypeScript**        | Latest   | Type safety, reduce runtime bugs, good IDE support             |
+| **Material-UI (MUI)** | v5       | Rich component library, consistent design system               |
+| **React Context API** | Built-in | Simple state management suitable for project scale             |
+| **ReactQuill**        | Latest   | Powerful rich text editor for content creation                 |
+| **Axios**             | Latest   | HTTP client with interceptors, automatic JWT handling          |
+| **Cloudinary**        | SDK      | Cloud storage for media, automatic image optimization          |
 
 ### Backend (`backend`)
 
-| Công nghệ      | Phiên bản | Lý do lựa chọn                                     |
-| -------------- | --------- | -------------------------------------------------- |
-| **Node.js**    | 18+       | JavaScript runtime hiệu suất cao, cộng đồng lớn    |
-| **Express.js** | Latest    | Web framework nhẹ, dễ cấu hình và mở rộng          |
-| **MongoDB**    | Latest    | NoSQL database linh hoạt, phù hợp với social media |
-| **Mongoose**   | Latest    | ODM cho MongoDB, schema validation mạnh mẽ         |
-| **JWT**        | Latest    | Authentication stateless, bảo mật và scalable      |
-| **Multer**     | Latest    | Middleware xử lý file upload                       |
-| **bcryptjs**   | Latest    | Hash password an toàn                              |
+| Technology     | Version | Reason for choice                                       |
+| -------------- | ------- | ------------------------------------------------------- |
+| **Node.js**    | 18+     | High-performance JS runtime, large community            |
+| **Express.js** | Latest  | Lightweight, easy-to-configure and extensible framework |
+| **MongoDB**    | Latest  | Flexible NoSQL database suitable for social media       |
+| **Mongoose**   | Latest  | ODM for MongoDB, strong schema validation               |
+| **JWT**        | Latest  | Stateless authentication, secure and scalable           |
+| **Multer**     | Latest  | Middleware for file uploads                             |
+| **bcryptjs**   | Latest  | Secure password hashing                                 |
 
-## 📁 Cấu trúc thư mục dự án
+## Project structure (summary)
 
-### Frontend Structure (`frontend`)
+-   frontend/ — Next.js app (components, app, pages, hooks, utils, public)
+-   backend/ — Express API (controllers, services, models, routes, utils)
+-   config.env (backend), .env (frontend)
 
-```
-frontend/
-├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── home/              # Trang chủ với pagination
-│   │   ├── login/             # Đăng nhập
-│   │   ├── profile/           # Trang profile người dùng
-│   │   ├── register/          # Đăng ký tài khoản
-│   │   ├── search/            # Tìm kiếm với tabs
-│   │   ├── verify/            # Xác thực tài khoản
-│   │   ├── favicon.ico        # Icon trang web
-│   │   └── layout.tsx         # Root layout
-│   ├── assets/                # Static assets
-│   ├── authorization/         # Authorization logic
-│   ├── axios/                 # Axios configuration
-│   ├── components/            # Reusable components
-│   │   ├── ButtonFollow/      # Button theo dõi
-│   │   ├── Comment/           # Comment components
-│   │   ├── common/            # Shared components
-│   │   ├── Posts/             # Post-related components
-│   │   ├── SearchResult/      # Kết quả tìm kiếm
-│   │
-│   ├── config/                # Configuration files (urlConfig.ts)
-│   ├── context/               # React Context providers
-│   ├── hooks/                 # Custom hooks
-│   ├── layouts/               # Layout components
-│   ├── libs/                  # Library configurations
-│   ├── locales/               # Internationalization
-│   ├── providers/             # React providers
-│   ├── styles/                # CSS styles
-│   ├── theme/                 # Theme configuration
-│   ├── types/                 # TypeScript definitions
-│   └── utils/                 # Utility functions
-├── public/                    # Public static files
-├── .env                       # Environment variables
-├── next.config.js             # Next.js configuration
-├── package.json               # Dependencies
-├── tailwind.config.js         # Tailwind CSS config
-└── tsconfig.json              # TypeScript config
-```
+## 🛠️ Installation and running instructions
 
-### Backend Structure (`backend`)
+### System requirements
 
-```
-backend/
-├── controllers/                # Route controllers
-│   ├── authController.js       # Authentication logic
-│   ├── commentController.js    # Comment handling
-│   ├── errorController.js      # Error handling
-│   ├── handlerFactory.js       # Factory pattern for CRUD
-│   ├── postController.js       # Post CRUD operations
-│   ├── searchController.js     # Search functionality
-│   └── userController.js       # User management
-├── models/                     # MongoDB models
-│   ├── commentLikeModel.js     # Comment like schema
-│   ├── commentModel.js         # Comment schema
-│   ├── likePostModel.js        # Post like schema
-│   ├── postModel.js            # Post schema
-│   ├── profileModel.js         # User profile schema
-│   ├── sharePostModel.js       # Share post schema
-│   └── userModel.js            # User schema
-├── routes/                     # API routes definition
-│   ├── commentRoutes.js        # Comment endpoints
-│   ├── postRoutes.js           # Post endpoints
-│   ├── searchRoutes.js         # Search endpoints
-│   └── userRoutes.js           # User endpoints
-├── services/                   # Business logic
-│   ├── authServices.js         # Authentication services
-│   ├── commentServices.js      # Comment services
-│   ├── handlerFactoryServices.js # Factory services
-│   ├── postServices.js         # Post services
-│   ├── profileServices.js      # Profile services
-│   └── userServices.js         # User services
-├── utils/                      # Utility functions
-├── node_modules/               # Dependencies
-├── public/                     # Static files
-├── .gitignore                  # Git ignore rules
-├── app.js                      # Express app configuration
-├── config.env                  # Environment variables
-├── package-lock.json           # Lock file
-├── package.json                # Dependencies và scripts
-└── server.js                   # Server entry point
-```
+-   **Node.js**: Version 18 or higher
+-   **npm** or **yarn**: Package manager
+-   **MongoDB**: Database (local or MongoDB Atlas)
+-   **Cloudinary Account**: For uploading and managing media
 
-## 🛠️ Hướng dẫn cài đặt và khởi chạy dự án
-
-### Yêu cầu hệ thống
-
--   **Node.js**: Phiên bản 18 trở lên
--   **npm** hoặc **yarn**: Package manager
--   **MongoDB**: Database (local hoặc MongoDB Atlas)
--   **Cloudinary Account**: Để upload và quản lý media
-
-### 1. Clone dự án
+### 1. Clone the project
 
 ```bash
 git clone [repository-url]
 cd DuAnWebBee
 ```
 
-### 2. Cài đặt Backend
+### 2. Install Backend
 
-#### Bước 1: Di chuyển vào thư mục backend
+#### Step 1: Go to the backend folder
 
 ```bash
 cd backend
 ```
 
-#### Bước 2: Cài đặt dependencies
+#### Step 2: Install dependencies
 
 ```bash
 npm install
 ```
 
-#### Bước 3: Cấu hình environment variables
+#### Step 3: Configure environment variables
 
-Tạo file `config.env` trong thư mục backend:
+Create `config.env` in the backend folder:
 
 ```env
 # Server Configuration
@@ -195,95 +123,106 @@ PORT=8000
 CLIENT_URL=http://localhost:3000
 BASE_URL=http://localhost:8000
 
-# Database Configuration
-DATABASE=mongodb+srv://victomblack2020:6vxRXjtvI2o2Qqm5@cluster0.vxdotmt.mongodb.net/bee-social?retryWrites=true&w=majority&appName=Cluster0
+DATABASE=mongodb+srv://victomblack2020:xWoIYboijhEjLD1y@cluster0.ve9baim.mongodb.net/MXHBee
 
-# JWT Configuration (localStorage-based)
+DATABASE_PASSWORD=xWoIYboijhEjLD1y
+
 JWT_SECRET=my-ultra-secure-and-ultra-long-secret
 JWT_REFRESH_SECRET=my-ultra-secure-refresh-token-and-ultra-long-secret
-JWT_EXPIRES_IN=15m
-JWT_REFRESH_EXPIRES_IN=7d
+JWT_REFRESH_EXPIRES_IN=10d
+JWT_REFRESH_COOKIE_EXPIRES_IN=30
+JWT_EXPIRES_IN=10s
+JWT_COOKIE_EXPIRES_IN=30
+JWT_COOKIE_REFRESH_TOKEN_EXPIRES_IN=10
 
-# Cloudinary Configuration
+
+EMAIL_USERNAME=a124458539192a
+EMAIL_PASSWORD=1e3caf48074eba
+EMAIL_HOST=smtp.mailtrap.io
+SERVICE=gmail
+SECURE=true
+USER=victomblack2020@gmail.com
+PASS=ozkr jkqq dcwr rwee
+EMAIL_PORT=587
+
 CLOUDINARY_NAME=ds6hdw753
 CLOUDINARY_API_KEY=894844815737539
 CLOUDINARY_API_SECRET=***************************
 CLOUDINARY_URL=cloudinary://${CLOUDINARY_API_KEY}:${CLOUDINARY_API_SECRET}@${CLOUDINARY_NAME}
 
-# Pusher Configuration (Real-time)
+# PASS=Beegin123456
+vnp_TmnCode=OQEE5RM5
+vnp_HashSecret=ACQOPVZYUIZNDCJAMOAXUMTZBYUPHOZC
+vnp_Url=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+vnp_Api=https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+vnp_ReturnUrl=http://localhost:8888/order/vnpay_return
+TZ=Asia/Ho_Chi_Minh
+PRODUCTION_BASE_URL=https://beegin.onrender.com
+
 PUSHER_APP_ID=1726124
 PUSHER_KEY=347a18ba158ea55c148d
 PUSHER_SECRET=935e6d0a12fb024b0a0c
 PUSHER_CLUSTER=ap1
-
-# Timezone
-TZ=Asia/Ho_Chi_Minh
-
 ```
 
-#### Bước 4: Không cần khởi động MongoDB local
+#### Step 4: No need to start local MongoDB
 
-Sử dụng MongoDB Atlas, backend sẽ tự động kết nối đến database cloud.
+Use MongoDB Atlas; backend will automatically connect to the cloud database.
 
-#### Bước 5: Chạy backend server
+#### Step 5: Run backend server
 
 ```bash
 npx nodemon server.js
 ```
 
-**Note**: Backend sử dụng `nodemon` để auto-restart khi có thay đổi code.
+**Note**: Backend uses `nodemon` for auto-restart on code changes.
 
-Backend sẽ chạy tại: `http://localhost:8000`
+Backend will run at: `http://localhost:8000`
 
-### 3. Cài đặt Frontend
+### 3. Install Frontend
 
-#### Bước 1: Mở terminal mới và di chuyển vào thư mục frontend
+#### Step 1: Open a new terminal and go to the frontend folder
 
 ```bash
 cd frontend
 ```
 
-#### Bước 2: Cài đặt dependencies
+#### Step 2: Install dependencies
 
 ```bash
 npm install
 ```
 
-#### Bước 3: Cấu hình environment variables
+#### Step 3: Configure environment variables
 
-Tạo file `.env` trong thư mục frontend:
+Create `.env` in the frontend folder:
 
 ```env
 # NextAuth Configuration
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=gfYnuhTCUrhrVW1l
-
-# API Configuration
+NEXTAUTH_SECRET='gfYnuhTCUrhrVW1l'
 NEXT_PUBLIC_BEEGIN_DOMAIN=http://localhost:8000
 NEXT_APP_BEEGIN_DOMAIN=http://localhost:8000
+# NEXT_APP_BEEGIN_DOMAIN=http://localhost:8000
 NEXT_APP_BEEGIN_URL=http://localhost:3000
-
-# Cloudinary Configuration
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=ds6hdw753
-NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=buq1gcyi
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME = ds6hdw753
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET = buq1gcyi
 NEXT_PUBLIC_CLOUDINARY_SECRET=894844815737539
 NEXT_PUBLIC_CLOUDINARY_URL=cloudinary://894844815737539:pzc5tM00o5WSt0y6fJSLowI94lc@ds6hdw753
-
-# Pusher Configuration (Real-time)
 NEXT_PUBLIC_PUSHER_APP_KEY=347a18ba158ea55c148d
 ```
 
-#### Bước 4: Chạy frontend server
+#### Step 4: Run frontend server
 
 ```bash
 npm run dev
 ```
 
-Frontend sẽ chạy tại: `http://localhost:3000`
+Frontend will run at: `http://localhost:3000`
 
 ## 🚀 Quick Start
 
-### Chạy toàn bộ project (2 terminals):
+### Run the whole project (2 terminals):
 
 **Terminal 1 (Backend):**
 
@@ -299,43 +238,36 @@ cd frontend
 npm run dev
 ```
 
-### Truy cập ứng dụng:
+### Access the application:
 
 -   **Frontend**: http://localhost:3000
 -   **Backend API**: http://localhost:8000
--   **MongoDB**: Local database `bee-social`
+-   **MongoDB**: Local database `MXHBEE`
 
-### 🔐 Authentication Flow:
-
-1. **Login**: Frontend gửi credentials → Backend verify → Return JWT tokens
-2. **Storage**: Tokens lưu trong `localStorage` (không dùng cookies)
-3. **API Calls**: Frontend attach token vào `Authorization` header
-4. **Refresh**: Auto refresh token khi gần hết hạn
-
-### 📄 Tóm tắt Files Environment
+### 📄 Environment files summary
 
 -   **Backend**: `backend/config.env` (port 8000)
 -   **Frontend**: `frontend/.env` (port 3000)
--   **Cloudinary**: Đã cấu hình sẵn trong cả 2 file
--   **Database**: MongoDB Atlas tại `DevShare-lite` (cloud, không cần cài local)
--   **Authentication**: JWT tokens lưu trong localStorage (không dùng cookies)
+-   **Cloudinary**: Preconfigured in both files
+-   **Database**: MongoDB Atlas at `DevShare-lite` (cloud, no local install required)
+-   **Authentication**: JWT tokens stored in localStorage (not using cookies)
 
-## 🎯 Features đã implement
+## 🎯 Implemented features
 
 ### ✅ **Core Features:**
 
--   **Home page**: Newsfeed hiển thị bài viết từ bạn bè với pagination
--   **Search system**: Tìm kiếm người dùng và bài viết (Top, Latest, User, Media)
--   **Profile system**: Profile cá nhân với [slug] routing động
--   **Authentication**: JWT-based với localStorage
--   **Post management**: Tạo, sửa, xóa bài viết với media upload
--   **Social interactions**: Like, comment, share bài viết
--   **Real-time features**: Pusher integration cho cập nhật thời gian thực
+-   **Home page**: Newsfeed showing posts from friends with pagination
+-   **Search system**: Search users and posts (Top, Latest, User, Media)
+-   **Profile system**: Personal profile with dynamic [slug] routing
+-   **Authentication**: JWT-based
+-   **Post management**: Create, edit, delete posts with media upload
+-   **Social interactions**: Like, comment, share posts
+-   **Real-time features**: Pusher integration for realtime updates
 
 ### ✅ **Technical Features:**
 
--   **Environment-based URLs**: Cấu hình deployment linh hoạt
--   **Responsive design**: Tối ưu cho mobile và desktop
--   **TypeScript**: Type safety trong toàn bộ ứng dụng
--   **Error handling**: Xử lý lỗi và feedback người dùng tốt
--   **File upload**: Tích hợp Cloudinary cho lưu trữ media
+-   **Environment-based URLs**: Flexible deployment configuration
+-   **Responsive design**: Optimized for desktop
+-   **TypeScript**: Type safety across the app
+-   **Error handling**: Good error handling and user feedback
+-   **File upload**: Cloudinary integration for media storage

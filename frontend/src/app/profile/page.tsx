@@ -16,11 +16,6 @@ import {
   ToggleButton,
   Skeleton
 } from '@mui/material'
-import { useAuth } from '@/context/AuthContext'
-import useTranslation from 'next-translate/useTranslation'
-import CreatePost from '@/components/Posts/CreatePost'
-import { TextField, Modal } from '@mui/material'
-
 import Image from 'next/image'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import Friends from './Friends'
@@ -44,7 +39,6 @@ import { usePosts } from '@/context/PostContext'
 import { IoMdImages } from 'react-icons/io'
 import { TbCell } from 'react-icons/tb'
 import PostsProfile from './PostsProfile'
-import useResponsive from '@/hooks/useResponsive'
 
 //component-style
 const StyledProfile = styled('div')(({ theme }) => ({
@@ -114,15 +108,9 @@ const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
 }))
 
 function page() {
-  const isMobile = useResponsive('down', 'sm')
   const axiosPrivate = useAxiosPrivate()
   const [showPosts, setShowPosts] = useState(true)
   const [open, setOpen] = useState(false)
-  const { user } = useAuth()
-  const { t } = useTranslation('common')
-  const [openPost, setOpenPost] = useState(false)
-  const [newPost, setNewPost] = useState<Post | null>(null)
-
   const [data, setData] = useState<{
     firstname: string
     lastname: string
@@ -149,13 +137,12 @@ function page() {
     NumberOfFollower: 0
   })
   const { postsState, postsDispatch } = usePosts()
-  console.log('Posts State:', postsState)
 
   const fetchPosts = async (currentPage = 1) => {
     try {
       const response = await axiosPrivate.get(`${UrlConfig.posts.getMyPosts}?limit=10&page=${currentPage}`)
-      const { total, data: posts } = response.data
-      return { total, posts }
+      let rslt = response.data
+      return rslt
     } catch (error) {
       console.log(error)
     }
@@ -168,11 +155,18 @@ function page() {
       setData(response.data.data)
     } catch (err) {}
   }
-
+  const getNumberOfFollow = async () => {
+    try {
+      const url = UrlConfig.me.getMyNumberOfFollows
+      const response = await axiosPrivate.get(url)
+      setNumber(response.data.data)
+    } catch (err) {}
+  }
   useEffect(() => {
     const fetchData = async () => {
       try {
         await getUsers()
+        await getNumberOfFollow()
       } catch (error) {
         console.log(error)
       }
@@ -391,36 +385,6 @@ function page() {
                 >
                   Posts
                 </Typography>
-                <Modal open={openPost} onClose={() => setOpenPost(false)}>
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      width: isMobile ? '80%' : '40%',
-                      height: isMobile ? '80%' : '83%',
-                      bgcolor: 'background.paper',
-                      boxShadow: 24,
-                      borderRadius: 2,
-                      padding: isMobile ? 3 : '20px'
-                    }}
-                  >
-                    <CreatePost open={openPost} setOpen={setOpenPost} newPost={newPost} setNewPost={setNewPost} />
-                  </Box>
-                </Modal>
-                {/* Create-post bar */}
-                <Stack direction='row' spacing={2} sx={{ mb: 3 }}>
-                  <Avatar src={user?.profile?.avatar} sx={{ width: 50, height: 50 }} />
-                  <TextField
-                    fullWidth
-                    size='small'
-                    variant='outlined'
-                    placeholder={t('CreatePostPlaceholder')}
-                    onClick={() => setOpenPost(true)}
-                    sx={{ '& .MuiInputBase-root': { height: '50px' } }}
-                  />
-                </Stack>
                 <PostsProfile propFetchMoreData={fetchPosts} />
               </Box>
             ) : (

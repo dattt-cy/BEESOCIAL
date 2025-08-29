@@ -15,7 +15,7 @@ router
         commentController.getCommentsOfPost
     )
     .post(
-        authController.restrictTo("user"),
+        authController.restrictTo("user", "business"),
         commentController.setQueryParameters,
         commentController.checkParentComment,
         commentController.createComment
@@ -31,19 +31,25 @@ router
         commentController.setPagingComment,
         commentController.getCommentsOfPost
     )
-    .patch(authController.restrictTo("user"), commentController.updateComment)
-    .delete(commentController.deleteComment);
+    .patch(
+        authController.restrictTo("user", "business"),
+        commentController.updateComment
+    )
+    .delete(
+        // authController.restrictTo("user", "bussiness", "admin"),
+        commentController.deleteComment
+    );
 
 router
     .route("/:id/like")
     .get(commentController.isCommentLikeByUser)
     .post(
-        authController.restrictTo("user"),
+        authController.restrictTo("user", "business"),
         commentController.setQueryParameters,
         commentController.likeComment
     )
     .delete(
-        authController.restrictTo("user"),
+        authController.restrictTo("user", "business"),
         commentController.setQueryParameters,
         commentController.unlikeComment
     );

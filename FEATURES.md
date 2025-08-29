@@ -1,138 +1,159 @@
-# 🚀 Tính năng DevShare Lite
+# 🚀 BeeSocial Features
 
-## 📋 Tổng quan
+## 📋 Overview
 
-**DevShare Lite** là một nền tảng diễn đàn kỹ thuật với đầy đủ tính năng mạng xã hội, được xây dựng bằng **MERN Stack** (MongoDB, Express.js, React, Node.js).
+**BeeSocial** is a technical social network platform built with the **MERN Stack** (MongoDB, Express.js, React, Node.js), offering a full suite of social features.
 
 ---
 
-## ✨ Các chức năng chính
+## ✨ Main Features
 
-### 1. 🔐 Hệ thống Authentication & Authorization
+### 0. 📝 Registration Process
 
-#### 1.1 Đăng ký & Đăng nhập
+#### 0.1 Account Type Selection
 
--   **Đăng ký tài khoản** với email và mật khẩu
--   **Đăng nhập** với JWT token
+-   Users choose between **Personal** or **Business** account types to start registration.
+-   Example interface:
+    ![Choose Account Type](screenshots/register_choose_type.png)
 
-**Giao diện đăng nhập:**
-![Login Form](screenshots/login.png)
+#### 0.2 4-Step Registration
 
-**Quy trình đăng ký 3 bước:**
+_Step 1: Account Information_
 
-_Bước 1: Nhập thông tin tài khoản_
-![Register Step 1](screenshots/register_step1.png)
+-   Enter email, password, confirm password.
+-   Example interface:
+    ![Register Step 1](screenshots/register_step1.png)
 
-_Bước 2: Thông tin cá nhân_
-![Register Step 2](screenshots/register_step2.png)
+_Step 2: Personal Information_
 
-_Bước 3: Hoàn thành đăng ký_
-![Register Step 3](screenshots/register_step3.png)
+-   Enter full name, username, address, gender, bio.
+-   Example interface:
+    ![Register Step 2](screenshots/register_step2.png)
 
-#### 1.2 Phân quyền người dùng
+_Step 3: Profile Picture_
 
--   **Basic user role** với quyền tạo, sửa, xóa bài viết của chính mình
--   **Protected routes** cho user đã đăng nhập
--   **JWT Token Management** với refresh token
+-   Upload and crop profile picture.
+-   Example interface:
+    ![Register Step 3](screenshots/register_step3.png)
+
+_Step 4: Select Preferred Topics_
+
+-   Choose at least 3 topics of interest for personalized content.
+-   Example interface:
+    ![Register Step 4](screenshots/register_step4.png)
+
+### 1. 🔐 Authentication & Authorization System
+
+#### 1.1 Login
+
+-   **Login** with JWT token
+-   Login interface:
+    ![Login Form](screenshots/login.png)
+
+#### 1.2 User Roles
+
+-   **Basic user role** with permissions to create, edit, and delete own posts
+-   **Protected routes** for authenticated users
+-   **JWT Token Management** with refresh token
 
 #### 1.3 JWT Token Management
 
 ```javascript
-// Refresh token để duy trì session
+// Refresh token to maintain session
 refreshToken: String,    // Stored in database
-accessToken: String,     // Short-lived, stored in memory
+accessToken: String,     // Short-lived,
 ```
 
-### 2. 👤 Quản lý Profile & User
+### 2. 👤 Profile & User Management
 
-#### 2.1 Profile cá nhân
+#### 2.1 Personal Profile
 
--   **Thông tin cơ bản**: Họ tên, giới tính, ngày sinh
--   **Avatar & Background**: Upload ảnh qua Cloudinary
--   **Bio**: Mô tả bản thân
--   **Slug URL**: Profile link dạng `/profile/{slug}`
--   **Chỉnh sửa profile** của chính mình
+-   **Basic info**: Full name, gender, date of birth
+-   **Avatar & Background**: Upload images via Cloudinary
+-   **Bio**: Personal description
+-   **Slug URL**: Profile link as `/profile/{slug}`
+-   **Edit own profile**
 
-**Trang profile cá nhân và chỉnh sửa profile:**
+**Personal profile and edit profile page:**
 ![Profile Page](screenshots/profile.png)
+![Edit Profile](screenshots/edit_profile.png)
 
-#### 2.2 Trang Profile công khai
+#### 2.2 Public Profile Page
 
--   **Hiển thị thông tin** công khai của user
--   **Danh sách bài viết** của user
--   **Responsive design** cho mobile và desktop
+-   **Display public info** of user
+-   **List of user's posts**
+-   **Responsive design** for mobile and desktop
 
-**Trang profile công khai của user khác:**
-![Public Profile Page](screenshots/public_profile.png)
+**Other user's public profile page:**
+![Public Profile Page](screenshots/business_profile.png)
 
-### 3. 📝 Hệ thống Posts (Bài viết)
+### 3. 📝 Posts System
 
-#### 3.1 Tạo & Chỉnh sửa bài viết
+#### 3.1 Create & Edit Posts
 
--   **Rich text editor** với Markdown support
--   **Upload multiple images** (tối đa 4 ảnh)
+-   **Upload multiple images** (up to 4 images)
 -   **Auto-save draft** functionality
--   **Preview mode** trước khi publish
--   **Chỉnh sửa bài viết** của chính mình
--   **Xóa bài viết** (soft delete)
+-   **Preview mode** before publishing
+-   **Edit own posts**
+-   **Delete posts** (soft delete)
 
-**Giao diện tạo bài viết mới:**
+**Create post interface:**
 ![Create Post](screenshots/create_post.png)
 
-**Giao diện chỉnh sửa bài viết:**
+**Edit post interface:**
 ![Edit Post](screenshots/edit_post.png)
 
-#### 3.2 Hiển thị bài viết
+#### 3.2 Post Display
 
--   **Timeline feed** với infinite scroll
+-   **Timeline feed** with infinite scroll
 -   **Responsive card layout**
--   **Image gallery** với lightbox
+-   **Image gallery** with lightbox
 -   **Social interactions**: Like, Comment, Share counts
 
-**Giao diện newsfeed timeline:**
-![Newsfeed Timeline](screenshots/display_newsfeed.png)
+**Newsfeed timeline interface:**
+![Newsfeed Timeline](screenshots/display_newfeed.png)
 
-### 4. 🔍 Tìm kiếm & Lọc
+### 4. 🔍 Search & Filter
 
-#### 4.1 Tìm kiếm Users
+#### 4.1 Search Users
 
--   **Tìm theo tên** (firstname, lastname)
--   **Tìm theo username/slug**
--   **Tìm theo email**
--   **Tìm theo bio** (mô tả cá nhân)
--   **Hiển thị kết quả** với avatar và thông tin cơ bản
+-   **Search by name** (firstname, lastname)
+-   **Search by username/slug**
+-   **Search by email**
+-   **Search by bio** (personal description)
+-   **Display results** with avatar and basic info
 
-**Giao diện tìm kiếm users:**
+**User search interface:**
 ![Search Users](screenshots/search_user.png)
 
-#### 4.2 Tìm kiếm Posts
+#### 4.2 Search Posts
 
--   **Tìm theo title** bài viết
--   **Tìm theo content** bài viết
--   **Filter theo user** cụ thể
--   **Sort theo ngày tạo**
+-   **Search by post title**
+-   **Search by post content**
+-   **Filter by specific user**
+-   **Sort by creation date**
 
-**Giao diện tìm kiếm posts:**
+**Post search interface:**
 ![Search Posts](screenshots/search_post.png)
 
-### 5. 🔄 Tính năng Share Posts (Chia sẻ)
+### 5. 🔄 Share Posts Feature
 
-#### 5.1 Share bài viết
+#### 5.1 Share Posts
 
--   **Quote share**: Thêm comment khi share
--   **Original post preview** trong shared post
--   **Share counter** tự động cập nhật
+-   **Quote share**: Add comment when sharing
+-   **Original post preview** in shared post
+-   **Share counter** auto-updates
 -   **Track sharing activity**
 
-**Modal share bài viết và hiển thị shared post:**
+**Share post modal and shared post display:**
 ![Share Post](screenshots/share_post.png)
 
-#### 5.2 Shared post display
+#### 5.2 Shared Post Display
 
 ```javascript
-// Structure của shared post
+// Shared post structure
 {
-  content: "Chia sẻ bài viết hay!",  // User's comment
+  content: "Sharing a great post!",  // User's comment
   parent: {                         // Original post
     content: "Original content...",
     user: { profile: {...} }
@@ -140,35 +161,35 @@ accessToken: String,     // Short-lived, stored in memory
 }
 ```
 
-### 6. 💬 Hệ thống Comments (Bình luận)
+### 6. 💬 Comments System
 
-#### 6.1 Threaded Comments (Cấu trúc cây)
+#### 6.1 Threaded Comments (Tree Structure)
 
--   **Root comments**: Bình luận gốc
--   **Nested replies**: Reply không giới hạn độ sâu
--   **Visual indentation** cho hierarchy
+-   **Root comments**
+-   **Nested replies**: Unlimited depth
+-   **Visual indentation** for hierarchy
 -   **Collapse/Expand** replies
 
-**Giao diện comment thread với replies:**
+**Comment thread interface with replies:**
 ![Comment Thread](screenshots/comment.png)
 
 #### 6.2 Comment Features
 
 -   **Real-time comment count** update
--   **Rich text trong comments**
--   **Edit & Delete** own comments chỉ
+-   **Rich text in comments**
+-   **Edit & Delete** own comments only
 -   **Reply to comments**
 
-### 7. ❤️ Hệ thống Interactions
+### 7. ❤️ Interactions System
 
 #### 7.1 Like Posts & Comments
 
--   **Toggle like/unlike** với animation
+-   **Toggle like/unlike** with animation
 -   **Real-time counter update**
 -   **Unique constraint**: 1 user = 1 like per post/comment
--   **Visual feedback** khi đã like
+-   **Visual feedback** when liked
 
-**Giao diện like button với counter:**
+**Like button interface with counter:**
 ![Like Posts](screenshots/like_list.png)
 
 #### 7.2 Social Counters
@@ -176,9 +197,9 @@ accessToken: String,     // Short-lived, stored in memory
 ```javascript
 // Auto-calculated counters
 post: {
-  numLikes: Number,     // Từ LikePost collection
-  numComments: Number,  // Từ Comment collection
-  numShares: Number     // Từ SharePost collection
+  numLikes: Number,     // From LikePost collection
+  numComments: Number,  // From Comment collection
+  numShares: Number     // From SharePost collection
 }
 ```
 
@@ -186,41 +207,68 @@ post: {
 
 #### 8.1 Desktop-First Development ⚠️
 
--   **Desktop optimization** đã hoàn thành
+-   **Desktop optimization** completed
 -   **Fixed desktop layout** (1200px+ screens)
--   **Desktop navigation** đã được optimize
--   ❌ **Mobile responsive** chưa được implement
+-   **Desktop navigation** optimized
+-   ❌ **Mobile responsive** not yet implemented
 
 #### 8.2 UI/UX Features
 
--   **Loading states** với skeletons
--   **Infinite scroll** cho timeline (desktop only)
--   **Modal dialogs** cho interactions
--   **Toast notifications** cho feedback
+-   **Loading states** with skeletons
+-   **Infinite scroll** for timeline (desktop only)
+-   **Modal dialogs** for interactions
+-   **Toast notifications** for feedback
+
+### 9. 🔔 Notification System
+
+#### 9.1 Notification Features
+
+-   **In-app notifications** for activities: like, comment, share, mention
+-   **Notification bell** with unread badge
+-   **Notification list** with avatar, content, time
+-   **Mark as read** and delete notifications
+-   **Real-time notification updates** on new events
+
+**Notification system interface:**
+![Notification](screenshots/notification.png)
+
+#### 9.2 Notification Structure
+
+```javascript
+// Basic notification structure
+{
+  type: "like" | "comment" | "share" | "mention",
+  content: "User A liked your post",
+  user: { profile: {...} },
+  post: { ... },
+  isRead: false,
+  createdAt: Date
+}
+```
 
 ---
 
-## 🔧 Các chức năng nâng cao (Ngoài yêu cầu tối thiểu)
+## 🔧 Advanced Features (Beyond Minimum Requirements)
 
-### ✅ **ĐÃ TRIỂN KHAI**
+### ✅ **IMPLEMENTED**
 
 #### 1. 🎯 **Real-time Features**
 
--   **Auto counter updates** cho likes, comments, shares
--   **Optimistic UI updates** với instant feedback
--   **Real-time activity tracking** cho user interactions
+-   **Auto counter updates** for likes, comments, shares
+-   **Optimistic UI updates** with instant feedback
+-   **Real-time activity tracking** for user interactions
 
 #### 2. 🚀 **Performance Optimizations**
 
--   **Database indexing** cho search queries
--   **Mongoose populate optimization** tránh N+1 queries
+-   **Database indexing** for search queries
+-   **Mongoose populate optimization** to avoid N+1 queries
 -   **React optimization** (memo, useMemo, useCallback)
--   **Image lazy loading** và compression
+-   **Image lazy loading** and compression
 
 #### 3. 🔍 **Advanced Search System**
 
 ```javascript
-// Multi-field search cho users và posts
+// Multi-field search for users and posts
 Profile.find({
     $or: [
         { firstname: { $regex: searchQuery, $options: "i" } },
@@ -230,17 +278,16 @@ Profile.find({
 });
 ```
 
--   **Dual search**: Users + Posts riêng biệt
--   **Real-time search** với debouncing
+-   **Dual search**: Separate for Users + Posts
+-   **Real-time search** with debouncing
 -   **Search result optimization**
 
 #### 4. 🎨 **Enhanced UI/UX**
 
--   **Rich text editor** cho posts
--   **Image carousel** với lightbox
+-   **Image carousel** with lightbox
 -   **Infinite scroll** timeline
--   **Modal system** với keyboard navigation
--   **Loading skeletons** và toast notifications
+-   **Modal system** with keyboard navigation
+-   **Loading skeletons** and toast notifications
 
 #### 5. 🔐 **Security Enhancements**
 
@@ -253,35 +300,35 @@ const schema = Joi.object({
 });
 ```
 
--   **Password hashing** với bcrypt
--   **JWT security** với refresh tokens
--   **CORS và rate limiting** cơ bản
+-   **Password hashing** with bcrypt
+-   **JWT security** with refresh tokens
+-   **Basic CORS and rate limiting**
 
 #### 6. 📷 **File Upload System**
 
--   **Cloudinary integration** với auto-optimization
--   **Multiple image uploads** (max 4 ảnh/post)
--   **Drag & drop interface** với progress indicators
+-   **Cloudinary integration** with auto-optimization
+-   **Multiple image uploads** (max 4 images/post)
+-   **Drag & drop interface** with progress indicators
 
 ---
 
-## ⚠️ Các vấn đề gặp phải và giải pháp
+## ⚠️ Known Issues & Solutions
 
 ### 1. 🐛 Performance Issues
 
-#### Vấn đề: N+1 Query Problem
+#### Issue: N+1 Query Problem
 
 ```javascript
-// Vấn đề: Query riêng lẻ cho mỗi user
+// Problem: Separate query for each user
 posts.forEach((post) => {
     User.findById(post.user); // N queries
 });
 ```
 
-#### Giải pháp: Mongoose Population
+#### Solution: Mongoose Population
 
 ```javascript
-// Giải pháp: Sử dụng populate để optimize
+// Solution: Use populate to optimize
 Post.find().populate({
     path: "user",
     populate: { path: "profile" },
@@ -290,12 +337,12 @@ Post.find().populate({
 
 ### 2. 🔄 State Management Complexity
 
-#### Vấn đề: Prop Drilling
+#### Issue: Prop Drilling
 
--   **Deep component nesting** khiến state truyền qua nhiều level
--   **Component re-render** không cần thiết
+-   **Deep component nesting** causes state to pass through many levels
+-   **Unnecessary component re-renders**
 
-#### Giải pháp: Context API + useReducer
+#### Solution: Context API + useReducer
 
 ```javascript
 // Global state management
@@ -305,12 +352,12 @@ const usePostContext = () => useContext(PostContext);
 
 ### 3. 📱 Mobile Responsiveness
 
-#### Vấn đề: Layout Breaking
+#### Issue: Layout Breaking
 
--   **Fixed widths** không phù hợp mobile
--   **Touch events** không hoạt động smooth
+-   **Fixed widths** not suitable for mobile
+-   **Touch events** not smooth
 
-#### Giải pháp: Mobile-First Design
+#### Solution: Mobile-First Design
 
 ```css
 /* Mobile-first CSS approach */
@@ -329,15 +376,15 @@ const usePostContext = () => useContext(PostContext);
 
 ### 4. 🔍 Search Performance
 
-#### Vấn đề: Slow Search Queries
+#### Issue: Slow Search Queries
 
--   **Regex queries** có thể chậm với large datasets
--   **No indexing** cho search fields
+-   **Regex queries** can be slow with large datasets
+-   **No indexing** for search fields
 
-#### Giải pháp: Database Indexing
+#### Solution: Database Indexing
 
 ```javascript
-// Tạo text indexes cho search
+// Create text indexes for search
 db.profiles.createIndex({
     firstname: "text",
     lastname: "text",
@@ -352,12 +399,12 @@ db.posts.createIndex({
 
 ### 5. 🖼️ Image Upload & Storage
 
-#### Vấn đề: Large File Handling
+#### Issue: Large File Handling
 
 -   **Slow upload speeds**
--   **Browser memory issues** với large images
+-   **Browser memory issues** with large images
 
-#### Giải pháp: Cloudinary + Compression
+#### Solution: Cloudinary + Compression
 
 ```javascript
 // Client-side image compression
@@ -374,27 +421,27 @@ const compressImage = (file) => {
 
 ---
 
-## 🚧 Các giới hạn đã biết
+## 🚧 Known Limitations
 
 ### 1. 👑 Admin & Moderation
 
 #### Missing Admin Features
 
--   **Không có admin dashboard** để quản lý hệ thống
--   **Không có content moderation** tools
--   **Không có user management** từ admin
--   **Không có system analytics** và reports
+-   **No admin dashboard** for system management
+-   **No content moderation** tools
+-   **No user management** from admin
+-   **No system analytics** and reports
 
 ### 2. 🔍 Search Limitations
 
 #### Current Search Constraints
 
--   **Chỉ search basic fields**: name, email, bio, post content
--   **Không có fuzzy matching** hoặc typo tolerance
--   **Không có search filters** advanced (date range, categories)
--   **Không có search suggestions** hoặc autocomplete
--   **Không có search analytics**
--   **Không có forgot password**
+-   **Only basic field search**: name, email, bio, post content
+-   **No fuzzy matching** or typo tolerance
+-   **No advanced search filters** (date range, categories)
+-   **No search suggestions** or autocomplete
+-   **No search analytics**
+-   **No forgot password**
 
 #### Missing Search Features
 
@@ -407,91 +454,85 @@ const compressImage = (file) => {
 
 #### Data Limitations
 
--   **Không có user analytics** dashboard
--   **Không có engagement metrics** tracking
--   **Không có popular content** identification
--   **Không có growth metrics**
+-   **No user analytics** dashboard
+-   **No engagement metrics** tracking
+-   **No growth metrics**
 
 ### 4. 📱 Mobile Experience
 
 #### Known Issues
 
--   **Upload progress** chưa hiển thị trên mobile
--   **Touch gestures** chưa được optimize hoàn toàn
--   **Offline support** chưa được implement
--   **Push notifications** chưa có
+-   **Upload progress** not shown on mobile
+-   **Touch gestures** not fully optimized
+-   **Offline support** not implemented
+-   **Push notifications** not available
 
 ### 5. 🔐 Security & Moderation
 
 #### Current Limitations
 
--   **Không có content reporting** system
--   **Không có user blocking** functionality
--   **Không có automated moderation**
--   **Basic rate limiting** chưa sophisticated
--   **Không có 2FA** (Two-Factor Authentication)
+-   **No content reporting** system
+-   **No user blocking** functionality
+-   **No automated moderation**
+-   **Basic rate limiting** not sophisticated
+-   **No 2FA** (Two-Factor Authentication)
 
 ### 6. 🎨 UI/UX Limitations
 
 #### Design Constraints
 
--   **Không có dark mode** theme switching
--   **Limited customization** options cho users
--   **Không có accessibility features** cho disabled users
--   **Không có email notifications** cho activities
+-   **No dark mode** theme switching
+-   **Limited customization** options for users
+-   **No accessibility features** for disabled users
 
 ---
 
-## 🚀 Định hướng phát triển tương lai
+## 🚀 Future Development Roadmap
 
-### 1. 🎯 Immediate Improvements (1-3 tháng)
+### 1. 🎯 Short-term Improvements (1-3 months)
 
 #### 1.1 Admin System Development
 
--   [ ] **Admin dashboard** với user management
+-   [ ] **Admin dashboard** for user management
 -   [ ] **Content moderation** tools
--   [ ] **System analytics** và reporting
+-   [ ] **System analytics** and reporting
 -   [ ] **User role management**
 -   [ ] **Content approval** workflow
 
 #### 1.2 Enhanced Search
 
--   [ ] **Full-text search** với MongoDB Atlas Search
+-   [ ] **Full-text search** with MongoDB Atlas Search
 -   [ ] **Search filters** (date, user, category)
--   [ ] **Search suggestions** và autocomplete
+-   [ ] **Search suggestions** and autocomplete
 -   [ ] **Search in comments** functionality
 -   [ ] **Advanced search syntax**
 
 #### 1.3 Performance Enhancements
 
--   [ ] **Redis caching** cho frequently accessed data
+-   [ ] **Redis caching** for frequently accessed data
 -   [ ] **Database indexing optimization**
--   [ ] **CDN setup** cho static assets
--   [ ] **Bundle optimization** và code splitting
+-   [ ] **CDN setup** for static assets
+-   [ ] **Bundle optimization** and code splitting
 
-### 2. 🔧 Medium-term Features (3-6 tháng)
+### 2. 🔧 Medium-term Features (3-6 months)
 
 #### 2.1 Advanced Social Features
 
--   [ ] **Follow/Unfollow users** functionality
 -   [ ] **Private messaging** system
--   [ ] **User mentions** trong posts và comments
--   [ ] **Hashtag system** cho categorization
+-   [ ] **User mentions** in posts and comments
 -   [ ] **Trending topics** identification
 
 #### 2.2 Content Enhancement
 
--   [ ] **Categories/Tags** cho posts
--   [ ] **Rich text editor** với code syntax highlighting
--   [ ] **Markdown support** cho technical posts
--   [ ] **Video upload** support
--   [ ] **File attachments** cho documents
+-   [ ] **Rich text editor** with code syntax highlighting
+-   [ ] **Markdown support** for technical posts
+-   [ ] **File attachments** for documents
 
 #### 2.3 Notifications & Communication
 
--   [ ] **Email notifications** cho activities
+-   [ ] **Email notifications** for activities
 -   [ ] **In-app notifications** system
--   [ ] **Push notifications** cho web
+-   [ ] **Push notifications** for web
 -   [ ] **Notification preferences** management
 
 #### 2.4 Moderation & Safety
@@ -501,27 +542,27 @@ const compressImage = (file) => {
 -   [ ] **Automated content filtering**
 -   [ ] **Community guidelines** enforcement
 
-### 3. 🚀 Long-term Vision (6-12 tháng)
+### 3. 🚀 Long-term Vision (6-12 months)
 
 #### 3.1 Platform Expansion
 
 -   [ ] **Mobile app** (React Native)
 -   [ ] **Desktop app** (Electron)
--   [ ] **Browser extension** cho quick sharing
--   [ ] **API marketplace** cho third-party integrations
+-   [ ] **Browser extension** for quick sharing
+-   [ ] **API marketplace** for third-party integrations
 
 #### 3.2 Advanced Features
 
 -   [ ] **AI-powered recommendations**
--   [ ] **Advanced search** với Elasticsearch
+-   [ ] **Advanced search** with Elasticsearch
 -   [ ] **Real-time collaboration** tools
--   [ ] **Integration với GitHub/GitLab**
--   [ ] **Code snippet sharing** với syntax highlighting
+-   [ ] **Integration with GitHub/GitLab**
+-   [ ] **Code snippet sharing** with syntax highlighting
 
 #### 3.3 Community Features
 
 -   [ ] **Groups/Communities** creation
--   [ ] **Event scheduling** cho meetups
+-   [ ] **Event scheduling** for meetups
 -   [ ] **Job board** integration
 -   [ ] **Mentorship program** matching
 
@@ -532,7 +573,7 @@ const compressImage = (file) => {
 -   [ ] **Microservices architecture**
 -   [ ] **Database sharding** strategy
 -   [ ] **Load balancing** setup
--   [ ] **CDN và edge computing**
+-   [ ] **CDN and edge computing**
 
 #### 4.2 DevOps & Monitoring
 
@@ -545,77 +586,74 @@ const compressImage = (file) => {
 
 #### 5.1 Search Engine Enhancement
 
--   [ ] **Elasticsearch integration** cho advanced search
--   [ ] **Machine learning** cho search relevance
+-   [ ] **Elasticsearch integration** for advanced search
+-   [ ] **Machine learning** for search relevance
 -   [ ] **Semantic search** capabilities
 -   [ ] **Voice search** functionality
 
 #### 5.2 Content Discovery
 
--   [ ] **Recommendation engine** cho personalized content
--   [ ] **Trending algorithms** cho popular content
+-   [ ] **Recommendation engine** for personalized content
+-   [ ] **Trending algorithms** for popular content
 -   [ ] **Related posts** suggestions
--   [ ] **User interests** tracking và matching
+-   [ ] **User interests** tracking and matching
 
 ---
 
 ## 📊 Current Feature Status
 
-### ✅ Implemented Features
+### ✅ Implemented
 
 -   **User Authentication** (Register, Login, JWT)
 -   **Profile Management** (Create, Edit, View)
--   **Post Management** (CRUD operations)
+-   **Post Management** (CRUD)
 -   **Comment System** (Threaded comments)
+-   **Notifications** (Email, push, in-app)
 -   **Like System** (Posts and Comments)
 -   **Share System** (Quote sharing)
 -   **Basic Search** (Users and Posts)
 -   **File Upload** (Images via Cloudinary)
 -   **Responsive Design** (Mobile-friendly)
 
-### 🚧 Partially Implemented
+### 🚧 In Progress
 
--   **Search Functionality** (Basic regex search only)
--   **User Permissions** (Basic user role only)
--   **Real-time Updates** (Counter updates only)
+-   **Advanced Search** (Currently only basic regex)
+-   **User Permissions** (Only basic roles)
+-   **Real-time Updates** (Only counter updates)
 
-### ❌ Not Implemented Yet
+### ❌ Not Yet Implemented
 
--   **Admin System** (Complete admin functionality)
+-   **Admin System** (Not complete)
 -   **Advanced Search** (Full-text, filters, suggestions)
--   **Notifications** (Email, push, in-app)
 -   **Moderation Tools** (Reporting, blocking)
 -   **Analytics Dashboard**
 -   **Mobile App**
 
 ---
 
-## 🎯 Kết luận
+## 🎯 Conclusion
 
-**DevShare Lite** trong phiên bản hiện tại đã hoàn thành được các tính năng cốt lõi của một mạng xã hội kỹ thuật:
+The current version of **BeeSocial** has completed all core features of a social network:
 
-✅ **Core Social Features**: Posts, Comments, Likes, Shares
-✅ **User Management**: Authentication, Profiles
-✅ **Basic Search**: Users và Posts
-✅ **File Upload**: Images qua Cloudinary
-✅ **Responsive Design**: Mobile-friendly interface
-✅ **Real-time Interactions**: Live counters và updates
+✅ **Core Social Features**: Posts, Comments, Likes, Shares  
+✅ **User Management**: Registration, Login, Profile  
+✅ **Basic Search**: Users and Posts  
+✅ **Image Upload**: Cloudinary  
+✅ **Responsive Design**: Mobile-friendly  
+✅ **Real-time Interactions**: Counter and notification updates
 
-**Những điểm mạnh:**
+**Strengths:**
 
--   Architecture vững chắc với MERN stack
--   Database design tối ưu cho social features
--   User experience mượt mà với real-time updates
--   Security cơ bản với JWT authentication
--   Performance tốt với proper indexing
+-   Solid MERN stack architecture
+-   Optimized database design for social features
+-   Smooth user experience with real-time updates
+-   Basic security with JWT
+-   Good performance thanks to proper indexing
 
-**Những hạn chế cần cải thiện:**
+**Limitations to Improve:**
 
--   Thiếu admin system cho content management
--   Search functionality còn basic
--   Chưa có notification system
--   Thiếu moderation tools cho community safety
+-   Lacking admin system for content management
+-   Search functionality is still basic
+-   Missing moderation tools for community safety
 
-Với foundation hiện tại, **DevShare Lite** sẵn sàng cho việc mở rộng thêm các tính năng advanced và có thể phát triển thành một platform hoàn chỉnh phục vụ cộng đồng developers.
-
-=
+With the current foundation, **BeeSocial** is ready to expand advanced features and become a complete social network platform for the technical community.

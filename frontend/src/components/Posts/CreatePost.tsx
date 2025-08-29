@@ -1,6 +1,4 @@
-'use client'
-import React, { useRef, useState } from 'react'
-import 'react-quill/dist/quill.snow.css'
+import React, { useState } from 'react'
 import { Box, Typography, Stack, Avatar, TextField, IconButton, Button } from '@mui/material'
 import CollectionsIcon from '@mui/icons-material/Collections'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
@@ -12,6 +10,8 @@ import { styled } from '@mui/material/styles'
 import useSnackbar from '@/context/snackbarContext'
 import Snackbar from '@/components/common/Snackbar'
 import { useAuth } from '@/context/AuthContext'
+import Autocomplete from '@/components/common/AutoComplete'
+import { Category } from '@/types/category'
 import { Post } from '@/types/post'
 import PostLoader from '@/components/common/Loader/PostLoader'
 import EmojiPicker from '../common/EmojiPicker'
@@ -22,18 +22,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Video from 'next-video'
 import getFileType from '@/utils/getFileType'
 import useTranslation from 'next-translate/useTranslation'
-import TurndownService from 'turndown'
-import dynamic from 'next/dynamic'
-
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
-const quillModules = {
-  toolbar: [['bold', 'italic', 'underline', 'strike'], [{ header: [1, 2, 3, false] }], ['link', 'image', 'clean']]
-}
-const quillFormats = ['header', 'bold', 'italic', 'underline', 'strike', 'link', 'image']
 
 interface NewPostProps {
   content: string | ''
   images: string[] | undefined
+  categories: string[] | undefined
 }
 
 const ImageContainerStyled = styled('div')<{ number: number }>((props) => ({
@@ -97,10 +90,13 @@ async function handleFileUpload(files: File[]) {
       .then((response) => response.json())
       .then((data) => {
         if (data.secure_url !== '') {
-          return data.secure_url
+          const uploadedFileUrl = data.secure_url
+          return uploadedFileUrl
         }
       })
-      .catch((err) => err)
+      .catch((err) => {
+        return err
+      })
   })
   const uploadedUrls = await Promise.all(uploadPromises)
   return uploadedUrls
@@ -118,6 +114,8 @@ const CreatePost = ({ open, setOpen, newPost, setNewPost, repost }: CreatePostPr
   const { t } = useTranslation('common')
   const isMobile = useResponsive('down', 'sm')
   const { user } = useAuth()
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
   const [content, setContent] = useState<string | ''>('')
   const [images, setImages] = useState<any>([])
   const [isSuccess, setIsSuccess] = useState(false)
@@ -127,65 +125,102 @@ const CreatePost = ({ open, setOpen, newPost, setNewPost, repost }: CreatePostPr
   const { postsState, postsDispatch } = usePosts()
   const queryClient = useQueryClient()
 
-  // Khi người dùng paste, nếu có HTML thì convert sang Markdown
-
   const handleImageChange = (e: any) => {
     const files = e.target.files
     if (files && files.length > 0 && images.length <= 4) {
       const newImages = [...images]
-      let pushLength = files.length
+      var pushLength = files.length
       if (pushLength + images.length > 4) pushLength = 4 - images.length
-      for (let i = 0; i < pushLength; i++) newImages.push(files[i])
+      for (let i = 0; i < pushLength; i++) {
+        newImages.push(files[i])
+      }
       setImages(newImages)
     }
   }
   const handleDeleteImages = (indexToRemove: number) => {
     setImages((prevItems: any) => prevItems.filter((item: any, index: number) => index !== indexToRemove))
   }
-
   const addPostApi = async (data: NewPostProps) => {
     const response = await axiosPrivate.post(urlConfig.posts.createPost, {
       content: data.content,
       images: data.images,
+      categories: data.categories,
       parent: repost?._id
     })
     if (response.data.status === 'success') {
       setIsSuccess(true)
       setNewPost(null)
       setIsLoad(false)
+      setSelectedCategories([])
       setContent('')
       setImages([])
       setOpen(false)
       postsDispatch({ type: 'ADD_POST', payload: response.data.data })
-      setSnack({ open: true, message: 'Post created successfully!', type: 'success' })
+      setSnack({
+        open: true,
+        message: 'Post created successfully!',
+        type: 'success'
+      })
     } else {
-      setSnack({ open: true, message: 'Something went wrong! Please try again!', type: 'error' })
+      setSnack({
+        open: true,
+        message: 'Something went wrong! Please try again!',
+        type: 'error'
+      })
     }
   }
 
   const createPost = async () => {
     if (!content && images.length === 0 && !repost) {
-      setSnack({ open: true, message: 'Write something or add images to your post!', type: 'error' })
+      setSnack({
+        open: true,
+        message: 'Write something or add images to your post!',
+        type: 'error'
+      })
       return
     }
     setIsLoad(true)
     const uploadedUrls = await handleFileUpload(images)
-    const data: NewPostProps = { content, images: uploadedUrls }
+    const data: NewPostProps = {
+      content: content,
+      images: uploadedUrls,
+      categories: selectedCategories.map((item: Category) => item._id)
+    }
     addPostApi(data)
   }
 
+  React.useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axiosPrivate.get(urlConfig.categories.getCategories)
+        setCategories(response.data.data.data)
+      } catch (error) {
+        // Handle any errors that occur during the fetchComments() function
+      }
+    }
+    fetchCategories()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   return (
     <>
       {isLoad && <PostLoader />}
+
       <div>
         {isSuccess && <Snackbar />}
         <Stack direction={'row'} sx={{ alignItems: 'center' }} gap={2}>
           <Avatar alt='Remy Sharp' src={user?.profile?.avatar} sx={{ width: 60, height: 60 }} />
           <Box>
             <Typography variant='h4' sx={{ fontWeight: 'bold' }}>
+              {' '}
               {user?.profile?.firstname + ' ' + user?.profile?.lastname}
             </Typography>
-            <Typography sx={{ color: 'rgba(0, 0, 0, 0.50)', fontSize: isMobile ? '10px' : '14px', fontWeight: 400 }}>
+            <Typography
+              sx={{
+                color: 'rgba(0, 0, 0, 0.50)',
+                fontSize: isMobile ? '10px' : '14px',
+                fontWeight: 400
+              }}
+            >
               @{user?.profile?.slug}
             </Typography>
           </Box>
@@ -199,49 +234,29 @@ const CreatePost = ({ open, setOpen, newPost, setNewPost, repost }: CreatePostPr
             marginTop: '17px'
           }}
         >
-          <Box
-            sx={{
-              mt: 2,
-              mb: 2,
-              // Ví dụ bạn muốn viền, bo góc:
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 1,
-              // Và ép chiều cao tối thiểu
-              minHeight: 200,
-              // Cho thanh cuộn khi nội dung vượt quá
-              overflow: 'auto',
-              '& .ql-editor': {
-                minHeight: '150px',
-                lineHeight: '1.5',
-                padding: '12px 15px',
-                fontSize: '14px'
-              },
-              '& .ql-toolbar': {
-                borderBottom: '1px solid #ccc',
-                borderRadius: '4px 4px 0 0'
-              },
-              '& .ql-container': {
-                borderRadius: '0 0 4px 4px',
-                fontSize: '14px'
-              }
-            }}
-          >
-            <ReactQuill
-              theme='snow'
-              value={content}
-              onChange={setContent}
+          <Autocomplete data={categories} selectedData={selectedCategories} setSelectedData={setSelectedCategories} />
+          <Box>
+            <TextField
+              id='outlined-multiline-static'
+              multiline
               placeholder={t("What's on your mind?")}
-              modules={quillModules}
-              formats={quillFormats}
-              style={{ height: '100%' }} // để Quill tận dụng toàn bộ height của Box
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              sx={{
+                width: '100%',
+                marginTop: '20px',
+                marginBottom: '10px',
+                '& fieldset': { border: 'none' },
+                '& .MuiInputBase-root': {
+                  overflow: 'auto'
+                }
+              }}
             />
-
             <Box sx={{ position: 'relative', paddingBottom: '30px' }}>
-              <ImageContainerStyled number={images.length}>
-                {images.map((item: File, index: number) =>
+              <ImageContainerStyled number={images ? images.length : 0}>
+                {images?.map((item: File, index: number) =>
                   getFileType(item) === 'video' ? (
-                    <span className={`image-${index + 1}`} style={{ position: 'relative' }} key={index}>
+                    <span className={`image-${index + 1}`} style={{ position: 'relative' }}>
                       <Video
                         className={`video-${index + 1}`}
                         src={URL.createObjectURL(item)}
@@ -263,8 +278,9 @@ const CreatePost = ({ open, setOpen, newPost, setNewPost, repost }: CreatePostPr
                       </IconButton>
                     </span>
                   ) : (
-                    <span className={`image-${index + 1}`} style={{ position: 'relative' }} key={index}>
-                      <img src={URL.createObjectURL(item)} alt='image' loading='lazy' />
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <span className={`image-${index + 1}`} style={{ position: 'relative' }}>
+                      <img src={URL.createObjectURL(item)} key={index} alt='image' loading='lazy' />
                       <IconButton
                         sx={{
                           position: 'absolute',
@@ -289,8 +305,8 @@ const CreatePost = ({ open, setOpen, newPost, setNewPost, repost }: CreatePostPr
         <Box
           sx={{
             position: 'fixed',
-            bottom: '0px',
-            zIndex: 999,
+            bottom: '0px', // Adjust the position as needed
+            zIndex: 999, // Adjust the z-index as needed
             backgroundColor: 'white',
             height: '190px',
             width: '95%'
@@ -310,36 +326,63 @@ const CreatePost = ({ open, setOpen, newPost, setNewPost, repost }: CreatePostPr
               Add to your post
             </Typography>
             <Stack direction={'row'} gap={2} sx={{ width: '55%', justifyContent: 'end' }}>
-              <input
-                accept='image/*, video/*'
-                type='file'
-                id='icon-button-file'
-                multiple
-                onChange={handleImageChange}
-                className='hidden'
-                disabled={images.length === 4}
-              />
-              <label htmlFor='icon-button-file'>
-                <IconButton component='span' disabled={images.length === 4}>
-                  <CollectionsIcon
-                    sx={{
-                      color:
-                        images.length === 4
-                          ? (theme) => theme.palette.action.disabled
-                          : (theme) => theme.palette.secondary.main
-                    }}
-                    fontSize='large'
-                  />
-                </IconButton>
-              </label>
+              {/* <>
+                <input
+                  accept='*'
+                  type='file'
+                  id='icon-button-video'
+                  multiple
+                  onChange={handleImageChange}
+                  className='hidden'
+                />
+                <label htmlFor='icon-button-video'>
+                  <IconButton
+                    component='span'
+                    sx={{ color: (theme: any) => theme.palette.secondary.main, fontSize: '35px' }}
+                  >
+                    <MdVideoLibrary />
+                  </IconButton>
+                </label>
+              </>  */}
+              <>
+                <input
+                  accept='image/*, video/*'
+                  type='file'
+                  id='icon-button-file'
+                  multiple
+                  onChange={handleImageChange}
+                  className='hidden'
+                  disabled={images.length === 4}
+                />
+                <label htmlFor='icon-button-file'>
+                  <IconButton component='span' disabled={images.length === 4}>
+                    <CollectionsIcon
+                      //@ts-ignore
+                      sx={{
+                        color:
+                          images.length === 4
+                            ? //@ts-ignore
+                              (theme) => theme.palette.disabled
+                            : (theme) => theme.palette.secondary.main
+                      }}
+                      fontSize='large'
+                    />
+                  </IconButton>
+                </label>
+              </>
               <EmojiPicker content={content} setContent={setContent} sizeMedium={false} />
             </Stack>
           </Box>
           <Button
             variant='contained'
-            sx={{ width: '100%', marginTop: '20px', padding: '12px 0', color: 'white !important' }}
-            onClick={createPost}
-            disabled={!content && images.length === 0 && !repost}
+            sx={{
+              width: '100%',
+              marginTop: '20px',
+              padding: '12px 0',
+              color: 'white !important'
+            }}
+            onClick={() => createPost()}
+            disabled={!content && images.length === 0 && !repost ? true : false}
           >
             Create Post
           </Button>

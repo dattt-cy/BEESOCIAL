@@ -10,11 +10,17 @@ import {
   Select,
   MenuItem,
   IconButton,
+  FormControlLabel,
+  Checkbox,
+  ToggleButton,
+  Button,
+  Typography
 } from '@mui/material'
-import { Delete } from '@mui/icons-material'
-import { useState, ChangeEvent } from 'react'
+import { Edit, Delete, Favorite, FavoriteBorder } from '@mui/icons-material'
+import { useState, ChangeEvent, useEffect } from 'react'
 import { Register } from '@/types/register'
 import ImageCropper from '@/components/common/ImageCropper'
+import UrlConfig from '@/config/urlConfig'
 import useAxiosPrivate from '@/hooks/useAxiosPrivate'
 
 interface RegisterFormsProps {
@@ -53,6 +59,48 @@ const RegisterForms = ({
       ...formErrors,
       [name]: value.length > 0 ? true : false
     })
+  }
+  const axiosPrivate = useAxiosPrivate()
+
+  const [topics, setTopics] = useState<any>([])
+  const getTopics = async () => {
+    try {
+      let response = await axiosPrivate.get(`${UrlConfig.categories.getCategories}`)
+      setTopics(
+        response.data.data.data.map((topic: any) => {
+          return { ...topic, isChecked: false }
+        })
+      )
+    } catch (err) {}
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await getTopics()
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    fetchData()
+  }, [])
+
+  const [selected, setSelected] = useState(false)
+
+  const handleCheckboxTick = (topic: any, index: number) => {
+    var changedTopics = [...topics]
+    changedTopics[index].isChecked = !changedTopics[index].isChecked
+    setTopics(changedTopics)
+
+    if (formValues.preferences.includes(topic._id)) {
+      setFormValues({
+        ...formValues,
+        ['preferences']: formValues.preferences.filter((pref: string) => pref !== topic._id)
+      })
+    } else {
+      setFormValues({ ...formValues, ['preferences']: [...formValues.preferences, topic._id] })
+    }
+    // console.log(formValues.preferences)
   }
 
   return (
@@ -131,7 +179,7 @@ const RegisterForms = ({
               value={formValues.address}
               helperText={!formErrors.address && 'Please fill in your address'}
               onChange={handleTextFieldChange}
-              sx={{ width: "200%" }}
+              sx={{ width: '200%' }}
             />
             <FormControl fullWidth>
               <InputLabel id='demo-simple-select-label'>Gender</InputLabel>
@@ -147,7 +195,6 @@ const RegisterForms = ({
               </Select>
             </FormControl>
           </Stack>
-
 
           <TextField
             error={!formErrors.bio}
@@ -212,14 +259,38 @@ const RegisterForms = ({
           {editMode && (
             <Stack direction={'column'} sx={{ ml: 2 }} spacing={1}>
               {/* <IconButton><Edit /></IconButton> */}
-              <IconButton onClick={() => { setEditMode(false); setCropper(null); }}>
+              <IconButton
+                onClick={() => {
+                  setEditMode(false)
+                  setCropper(null)
+                }}
+              >
                 <Delete />
               </IconButton>
             </Stack>
           )}
         </Stack>
       </FormGroup>
-     
+      <FormGroup sx={{ display: step === 3 ? '' : 'none' }}>
+        <Box className='w-full px-5 text-center'>
+          <Typography
+            variant='h4'
+            sx={{ fontSize: '14px', color: (theme) => theme.palette.secondary.main, marginBottom: '10px' }}
+          >
+            Choose at least 3 categories you'd prefer to see
+          </Typography>
+          {topics.map((topic: any, index: number) => (
+            <Button
+              key={index}
+              sx={{ margin: '15px 0 0 15px', display: 'inline-block' }}
+              variant={topic.isChecked ? 'contained' : 'outlined'}
+              onClick={() => handleCheckboxTick(topic, index)}
+            >
+              {topic.name}
+            </Button>
+          ))}
+        </Box>
+      </FormGroup>
     </form>
   )
 }

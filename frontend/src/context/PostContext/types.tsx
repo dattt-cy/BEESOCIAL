@@ -100,22 +100,6 @@ interface SetPostsProfileAction {
     totalPosts: number | undefined
   }
 }
-interface UpdateCommentAction {
-  type: 'UPDATE_COMMENT'
-  payload: {
-    postId: string
-    commentId: string
-    content: string
-  }
-}
-
-interface DeleteCommentAction {
-  type: 'DELETE_COMMENT'
-  payload: {
-    postId: string
-    commentId: string
-  }
-}
 
 export type PostAction =
   | SetPostsAction
@@ -131,5 +115,3 @@ export type PostAction =
   | DeletePostAction
   | AddPostsInProfileAction
   | SetPostsProfileAction
-  | UpdateCommentAction
-  | DeleteCommentAction

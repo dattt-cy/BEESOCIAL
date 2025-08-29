@@ -1,17 +1,18 @@
 'use client'
-
-import '@/app/verify/globals.css'
+import './globals.css'
 import '@/styles/typing.css'
 import { Poppins } from 'next/font/google'
 import ThemeProvider from '../theme'
 import * as React from 'react'
 import Layout from '@/layouts'
 import { usePathname } from 'next/navigation'
+import Head from 'next/head'
 import { SessionProvider } from 'next-auth/react'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { Snackbar } from '@mui/material'
 import { SnackbarContextProvider } from '@/context/snackbarContext'
 import { PostProvider } from '@/context/PostContext'
+import { NotificationProvider } from '@/context/NotificationContext'
 import AnalyticsOutlinedIcon from '@mui/icons-material/AnalyticsOutlined'
 import AnalyticsIcon from '@mui/icons-material/Analytics'
 import ArticleIcon from '@mui/icons-material/Article'
@@ -24,9 +25,12 @@ import ContactPageIcon from '@mui/icons-material/ContactPage'
 import ContactPageOutlinedIcon from '@mui/icons-material/ContactPageOutlined'
 import TanstackProvider from '@/providers/TanstackProvider'
 import { FaHouseChimney, FaRegUser, FaUser, FaCircleUser, FaRegCircleUser } from 'react-icons/fa6'
+import { FaCompass, FaRegCompass } from 'react-icons/fa'
+import { BiSolidMessageSquareDetail } from 'react-icons/bi'
+import { BiMessageSquareDetail } from 'react-icons/bi'
 import { AiOutlineHome, AiFillHome } from 'react-icons/ai'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 const poppins = Poppins({
   weight: '400',
@@ -35,70 +39,149 @@ const poppins = Poppins({
   variable: '--font-poppins'
 })
 
+const metadata = {
+  title: 'Beegin',
+  description: 'A new next generation social media application! Where your stories beegin.'
+}
+
+const menuAdminItems = [
+  {
+    icon: <AnalyticsOutlinedIcon />,
+    iconActive: <AnalyticsIcon />,
+    label: 'Overview',
+    path: '/admin/overview'
+  },
+  {
+    icon: <ArticleOutlinedIcon />,
+    iconActive: <ArticleIcon />,
+    label: 'Reports',
+    path: '/admin/reports'
+  },
+  {
+    icon: <PeopleOutlineOutlinedIcon />,
+    iconActive: <PeopleAltIcon />,
+    label: 'User Management',
+    path: '/admin/user-management'
+  },
+  {
+    icon: <ContactPageOutlinedIcon />,
+    iconActive: <ContactPageIcon />,
+    label: 'Business Management',
+    path: '/admin/business-management'
+  },
+  {
+    icon: <SummarizeOutlinedIcon />,
+    iconActive: <SummarizeIcon />,
+    label: 'Advertisements',
+    path: '/admin/advertisements'
+  }
+]
+
+const menuBusinessItems = [
+  {
+    icon: <AnalyticsOutlinedIcon />,
+    iconActive: <AnalyticsIcon />,
+    label: 'Analytics',
+    path: '/business/analytics'
+  },
+  {
+    icon: <ArticleOutlinedIcon />,
+    iconActive: <ArticleIcon />,
+    label: 'Transactions',
+    path: '/business/transactions'
+  },
+  {
+    icon: <SummarizeOutlinedIcon />,
+    iconActive: <SummarizeIcon />,
+    label: 'Advertisements',
+    path: '/business/advertisement'
+  },
+  {
+    icon: <BiMessageSquareDetail />,
+    iconActive: <BiSolidMessageSquareDetail />,
+    label: 'Messages',
+    path: '/messages'
+  },
+  {
+    icon: <FaRegCircleUser />,
+    iconActive: <FaCircleUser />,
+    label: 'Profile',
+    path: '/profile'
+  }
+]
 export default function RootLayout({ children, session }: { children: React.ReactNode; session: any }) {
   const pathname = usePathname()
-  const [role, setRole] = useState<string>('user')
-  const noLayoutPaths = ['/login', '/register', '/register/personal']
+  const [role, setRole] = React.useState<string | null>(null)
+  const noLayoutPaths = ['/login', '/register', '/register/business', '/register/personal', '/forgot-password']
 
   useEffect(() => {
-    const originalRemoveChild = Element.prototype.removeChild
-
-    Element.prototype.removeChild = function <T extends Node>(child: T): T {
-      // chỉ gọi removeChild khi child thật sự là con của this
-      if (this.contains(child)) {
-        return originalRemoveChild.call(this, child) as T
-      } else {
-        console.warn('[removeChild guard] skipping removal of non-child node:', child)
-        return child
-      }
-    }
-
-    return () => {
-      // restore lại nguyên bản khi unmount
-      Element.prototype.removeChild = originalRemoveChild
+    if (typeof window !== 'undefined') {
+      setRole(localStorage.getItem('role'))
     }
   }, [])
 
+  const { t } = useTranslation('common')
+
   const menuItems = [
-    { icon: <AiOutlineHome />, iconActive: <AiFillHome />, label: 'Home', path: '/home' },
-    { icon: <FaRegCircleUser />, iconActive: <FaCircleUser />, label: 'Profile', path: '/profile' }
+    {
+      icon: <AiOutlineHome />,
+      iconActive: <AiFillHome />,
+      label: t('Home'),
+      path: '/home'
+    },
+    {
+      icon: <FaRegCompass />,
+      iconActive: <FaCompass />,
+      label: t('Explore'),
+      path: '/explore'
+    },
+    {
+      icon: <FaRegCircleUser />,
+      iconActive: <FaCircleUser />,
+      label: t('Profile'),
+      path: '/profile'
+    }
+    // {
+    //   icon: <SettingsOutlined />,
+    //   iconActive: <SettingsRoundedIcon />,
+    //   label: 'Settings',
+    //   path: '/settings'
+    // }
   ]
 
   return (
     <html lang='en'>
       <head>
-        {/* Metadata */}
-        <title>Beegin</title>
-        <meta name='description' content='A new next generation social media application! Where your stories beegin.' />
-
-        {/* Favicon - Đảm bảo đường dẫn đúng */}
-        <link rel='icon' href='/favicon.ico' sizes='any' />
-        <link rel='icon' href='/favicon.ico' type='image/x-icon' />
         <link rel='shortcut icon' href='/favicon.ico' />
         <link rel='apple-touch-icon' sizes='180x180' href='/apple-touch-icon.png' />
         <link rel='icon' type='image/png' sizes='32x32' href='/favicon-32x32.png' />
         <link rel='icon' type='image/png' sizes='16x16' href='/favicon-16x16.png' />
-
-        {/* Open Graph */}
+        <meta name='description' content={metadata.description} />
         <meta property='og:type' content='website' />
-        <meta property='og:title' content='Beegin' />
-        <meta
-          property='og:description'
-          content='A new next generation social media application! Where your stories beegin.'
-        />
+        <meta property='og:title' content={metadata.title} />
       </head>
       <body className={poppins.variable}>
         <AuthProvider>
           <TanstackProvider>
             <SnackbarContextProvider>
               <SessionProvider session={session}>
-                <PostProvider>
-                  {noLayoutPaths.includes(pathname) || pathname.startsWith('/verify') ? (
-                    <ThemeProvider>{children}</ThemeProvider>
-                  ) : (
-                    <ThemeProvider>{<Layout menuItems={menuItems}>{children}</Layout>}</ThemeProvider>
-                  )}
-                </PostProvider>
+                <NotificationProvider>
+                  <PostProvider>
+                    {noLayoutPaths.includes(pathname) || pathname.startsWith('/verify') ? (
+                      <ThemeProvider>{children}</ThemeProvider>
+                    ) : (
+                      <ThemeProvider>
+                        {role === 'admin' ? (
+                          <Layout menuItems={menuAdminItems}>{children}</Layout>
+                        ) : role === 'business' ? (
+                          <Layout menuItems={menuBusinessItems}>{children}</Layout>
+                        ) : (
+                          <Layout menuItems={menuItems}>{children}</Layout>
+                        )}
+                      </ThemeProvider>
+                    )}
+                  </PostProvider>
+                </NotificationProvider>
               </SessionProvider>
             </SnackbarContextProvider>
           </TanstackProvider>

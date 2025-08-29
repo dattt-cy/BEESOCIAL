@@ -23,7 +23,6 @@ import StepConnector, { stepConnectorClasses } from '@mui/material/StepConnector
 import { StepIconProps } from '@mui/material/StepIcon'
 import { Register } from '@/types/register'
 import axios from 'axios'
-// import the correct UrlConfig that contains user.signup
 import UrlConfig from '@/config/urlConfig'
 import RegistrationComplete from '../RegistrationSuccess'
 
@@ -173,7 +172,7 @@ function ColorlibStepIcon(props: StepIconProps) {
   )
 }
 
-const steps = ['Account credentials', 'Profile info', 'Profile picture']
+const steps = ['Account credentials', 'Profile info', 'Profile picture', 'Preferred topics']
 
 //----------------------------------------------------------------
 
@@ -264,7 +263,7 @@ export default function PersonalRegister() {
         setIsSubmitting(false)
         setSnack({
           open: true,
-          message: err.response?.data?.message,
+          message: err.response.data.message,
           type: 'error'
         })
       })
@@ -354,19 +353,19 @@ export default function PersonalRegister() {
                     type='submit'
                     variant='contained'
                     color='primary'
-                    // disabled={
-                    //   isSubmitting || (activeStep === steps.length - 1)
-                    //     ? true
-                    //     : false
-                    // }
+                    disabled={
+                      isSubmitting || (activeStep === steps.length - 1 && formValues.preferences.length < 3)
+                        ? true
+                        : false
+                    }
                     onClick={_handleSubmit}
                     //@ts-ignore
                     sx={{
                       background:
-                        isSubmitting || activeStep === steps.length - 1
-                          ? (theme) => `${theme.palette.action.disabledBackground}!important`
+                        isSubmitting || (activeStep === steps.length - 1 && formValues.preferences.length < 3)
+                          ? (theme) => `${theme.palette.disabled}!important`
                           : (theme) => `${theme.palette.secondary.main}!important`
-                      // ...((activeStep === steps.length - 1) && { color: 'blue' })
+                      // ...((activeStep === steps.length - 1) && formValues.preferences.length < 3 && { color: 'blue' })
                     }}
                   >
                     {activeStep === 2 && cropper === null ? (

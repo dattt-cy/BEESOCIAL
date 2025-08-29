@@ -1,8 +1,4 @@
-'use client'
-import 'react-quill/dist/quill.snow.css'
-import React, { useEffect, useRef, useState } from 'react'
-import ReactQuill from 'react-quill'
-import 'react-quill/dist/quill.snow.css' // Import Quill styles
+import React, { useState } from 'react'
 import { Box, Typography, Stack, Avatar, TextField, IconButton, Button, Modal } from '@mui/material'
 import CollectionsIcon from '@mui/icons-material/Collections'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
@@ -15,6 +11,7 @@ import useSnackbar from '@/context/snackbarContext'
 import Snackbar from '@/components/common/Snackbar'
 import { useAuth } from '@/context/AuthContext'
 import Autocomplete from '@/components/common/AutoComplete'
+import { Category } from '@/types/category'
 import { Post } from '@/types/post'
 import PostLoader from '@/components/common/Loader/PostLoader'
 import EmojiPicker from '../common/EmojiPicker'
@@ -25,17 +22,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Video from 'next-video'
 import getFileType from '@/utils/getFileType'
 import useTranslation from 'next-translate/useTranslation'
-import dynamic from 'next/dynamic'
 
 interface NewPostProps {
   content: string | ''
   images: string[] | undefined
   categories: string[] | undefined
 }
-const quillModules = {
-  toolbar: [['bold', 'italic', 'underline', 'strike'], [{ header: [1, 2, 3, false] }], ['link', 'image', 'clean']]
-}
-const quillFormats = ['header', 'bold', 'italic', 'underline', 'strike', 'link', 'image']
 
 const ImageContainerStyled = styled('div')<{ number: number }>((props) => ({
   display: props.number === 0 ? 'none' : 'grid',
@@ -119,17 +111,14 @@ interface CreatePostProps {
   post: Post | null
   repost?: Post
 }
-function decodeHtmlEntities(html: string) {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(html, 'text/html')
-  return doc.documentElement.textContent || ''
-}
 
 const EditPost = ({ open, setOpen, post, repost }: CreatePostProps) => {
   const { t } = useTranslation('common')
   const isMobile = useResponsive('down', 'sm')
   const { user } = useAuth()
-  const [content, setContent] = useState<string>('')
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<Category[]>(post?.categories)
+  const [content, setContent] = useState<any>(post?.content)
   const [images, setImages] = useState<any>(post?.images)
   const [isSuccess, setIsSuccess] = useState(false)
   const [isLoad, setIsLoad] = useState(false)
@@ -137,12 +126,6 @@ const EditPost = ({ open, setOpen, post, repost }: CreatePostProps) => {
   const { setSnack } = useSnackbar()
   const { postsState, postsDispatch } = usePosts()
   const queryClient = useQueryClient()
-
-  useEffect(() => {
-    if (post?.content) {
-      setContent(decodeHtmlEntities(post.content))
-    }
-  }, [post])
 
   const handleImageChange = (e: any) => {
     const { files } = e.target
@@ -200,11 +183,25 @@ const EditPost = ({ open, setOpen, post, repost }: CreatePostProps) => {
     const uploadedUrls = await handleFileUpload(images)
     const data = {
       content: content,
-      images: uploadedUrls
+      images: uploadedUrls,
+      categories: selectedCategories
     }
     //@ts-ignore
     updatePostApi(data)
   }
+
+  React.useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axiosPrivate.get(urlConfig.categories.getCategories)
+        setCategories(response.data.data.data)
+      } catch (error) {
+        // Handle any errors that occur during the fetchComments() function
+      }
+    }
+    fetchCategories()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>
@@ -253,25 +250,23 @@ const EditPost = ({ open, setOpen, post, repost }: CreatePostProps) => {
               marginTop: '17px'
             }}
           >
-            <Box
-              sx={{
-                width: '100%',
-                marginTop: '20px',
-                marginBottom: '10px',
-                '& fieldset': { border: 'none' },
-                '& .MuiInputBase-root': {
-                  overflow: 'auto'
-                }
-              }}
-            >
-              <ReactQuill
-                theme='snow'
-                value={content} // ← dùng value để bind state
-                onChange={setContent} // ← khi content thay đổi, Quill sẽ tự render lại
+            <Autocomplete data={categories} selectedData={selectedCategories} setSelectedData={setSelectedCategories} />
+            <Box>
+              <TextField
+                id='outlined-multiline-static'
+                multiline
                 placeholder={t("What's on your mind?")}
-                modules={quillModules}
-                formats={quillFormats}
-                style={{ height: '100%' }} // để Quill tận dụng toàn bộ height của Box
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                sx={{
+                  width: '100%',
+                  marginTop: '20px',
+                  marginBottom: '10px',
+                  '& fieldset': { border: 'none' },
+                  '& .MuiInputBase-root': {
+                    overflow: 'auto'
+                  }
+                }}
               />
               <Box sx={{ position: 'relative', paddingBottom: '30px' }}>
                 <ImageContainerStyled number={images ? images.length : 0}>

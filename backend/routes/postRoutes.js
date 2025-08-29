@@ -9,7 +9,19 @@ router.use(authController.protect);
 router
     .route("/")
     .get(postController.getAllPost)
-    .post(postController.setUserId, postController.createPost);
+    .post(
+        authController.restrictTo("user", "business"),
+        postController.setUserId,
+        postController.createPost
+    );
+
+router
+    .route("/business")
+    .post(
+        authController.restrictTo("business"),
+        postController.setUserId,
+        postController.createBusinessPost
+    );
 
 router.route("/me").get(postController.getAllPostsByMe);
 router.route("/getPostByUserId/:id").get(postController.getPostByUserId);
@@ -17,9 +29,6 @@ router.route("/sharedPosts").get(postController.getSharedPostsByUser);
 router.route("/likedPosts").get(postController.getLikedPostsByUser);
 router.route("/sharedPosts/:id").get(postController.getSharedPostsByUser);
 router.route("/likedPosts/:id").get(postController.getLikedPostsByUser);
-router
-    .route("/random")
-    .get(authController.restrictTo("user"), postController.getRandomPost);
 router
     .route("/:id")
     .get(postController.getPostById)
@@ -29,8 +38,14 @@ router
 router
     .route("/:id/like")
     .get(postController.isPostLikedByUser)
-    .post(authController.restrictTo("user"), postController.likePost)
-    .delete(authController.restrictTo("user"), postController.unlikePost);
+    .post(
+        authController.restrictTo("user", "business"),
+        postController.likePost
+    )
+    .delete(
+        authController.restrictTo("user", "business"),
+        postController.unlikePost
+    );
 
 router.route("/:id/users/like").get(postController.getUsersLikingPost);
 router.route("/:id/users/share").get(postController.getUsersSharingPost);

@@ -41,31 +41,6 @@ const addReplyCommentsToParentComment = (parentComment: Comment, commentId: stri
   }
 }
 
-const updateCommentInList = (comments: Comment[], commentId: string, content: string): Comment[] =>
-  comments.map((c) => ({
-    ...c,
-    ...(c._id === commentId ? { content } : {}),
-    children: c.children ? updateCommentInList(c.children, commentId, content) : []
-  }))
-
-const removeCommentFromList = (comments: Comment[], commentId: string): Comment[] =>
-  comments
-    // loại node bị xoá
-    .filter((c) => c._id !== commentId)
-    .map((c) => {
-      const oldChildren = c.children || []
-      // đệ quy xoá trong mảng con
-      const newChildren = removeCommentFromList(oldChildren, commentId)
-      // tính số replies mất đi
-      const lostReplies = oldChildren.length - newChildren.length
-      return {
-        ...c,
-        // giảm numReplies tương ứng
-        numReplies: c.numReplies - lostReplies,
-        children: newChildren
-      }
-    })
-
 export const postReducer = (state: PostState, action: PostAction) => {
   switch (action.type) {
     case 'SELECT_POST': {
@@ -220,52 +195,6 @@ export const postReducer = (state: PostState, action: PostAction) => {
                 numLikes: isLiked ? state.selectedPost.numLikes + 1 : state.selectedPost.numLikes - 1
               }
             : state.selectedPost
-      }
-    }
-    case 'UPDATE_COMMENT': {
-      const { postId, commentId, content } = action.payload
-      return {
-        ...state,
-        selectedPost:
-          state.selectedPost?._id === postId
-            ? {
-                ...state.selectedPost,
-                comments: updateCommentInList(state.selectedPost.comments, commentId, content)
-              }
-            : state.selectedPost,
-        posts: state.posts.map((post) =>
-          post._id === postId
-            ? {
-                ...post,
-                comments: updateCommentInList(post.comments, commentId, content)
-              }
-            : post
-        )
-      }
-    }
-    case 'DELETE_COMMENT': {
-      const { postId, commentId } = action.payload
-      return {
-        ...state,
-        selectedPost:
-          state.selectedPost?._id === postId
-            ? {
-                ...state.selectedPost,
-                numComments: state.selectedPost.numComments - 1,
-                totalComments: (state.selectedPost.totalComments || 0) - 1,
-                comments: removeCommentFromList(state.selectedPost.comments, commentId)
-              }
-            : state.selectedPost,
-        posts: state.posts.map((post) =>
-          post._id === postId
-            ? {
-                ...post,
-                numComments: post.numComments - 1,
-                totalComments: (post.totalComments || 0) - 1,
-                comments: removeCommentFromList(post.comments, commentId)
-              }
-            : post
-        )
       }
     }
     default:
