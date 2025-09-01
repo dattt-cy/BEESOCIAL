@@ -1,8 +1,11 @@
 # 💻 BEESOCIAL
 
 A modern social network where users can connect, share content, interact, and build online communities.
+
 Account Test:
+
 **Gmail**: victomblack1602@gmail.com
+
 **Password**: 123456@@
 ## 👨‍💻 Author information
 
